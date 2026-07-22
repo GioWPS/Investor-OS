@@ -13,11 +13,15 @@
 -- auth.users is the source of truth for identity. profiles just extends it with
 -- app-specific fields (like investor stage).
 create table if not exists public.profiles (
-  id         uuid primary key references auth.users (id) on delete cascade,
-  email      text not null,
-  stage      text check (stage in ('pre-deal', '1-3-deals', 'active')),
-  created_at timestamptz not null default now()
+  id            uuid primary key references auth.users (id) on delete cascade,
+  email         text not null,
+  stage         text check (stage in ('pre-deal', '1-3-deals', 'active')),
+  ghl_synced_at timestamptz,   -- set once, the first time we fire the signup webhook to GHL
+  created_at    timestamptz not null default now()
 );
+
+-- If profiles already exists from an earlier run, make sure the column is present.
+alter table public.profiles add column if not exists ghl_synced_at timestamptz;
 
 -- ── tool_results ─────────────────────────────────────────────────────────────
 -- One row per tool completion. inputs/outputs are jsonb ON PURPOSE: each tool has a
