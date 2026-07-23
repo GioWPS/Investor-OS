@@ -58,9 +58,9 @@ async function postToGhl(payload: GhlSyncPayload): Promise<void> {
   const url = process.env.GHL_WEBHOOK_URL;
   const secret = process.env.GHL_WEBHOOK_SECRET;
 
-  if (!url || !secret) {
-    // Not wired yet (e.g. local dev before GHL creds exist). Don't fail the user flow —
-    // just make it visible in server logs that the sync was skipped.
+  if (!url || !secret || !/^https?:\/\//i.test(url)) {
+    // Not wired yet (e.g. local dev before GHL creds exist, or a placeholder value).
+    // Don't fail the user flow — just note in server logs that the sync was skipped.
     console.warn(`[ghl] webhook not configured — skipping "${payload.event}" sync`);
     return;
   }

@@ -129,3 +129,137 @@ export function calculateMaxOffer(inputs: MaxOfferInputs): MaxOfferResult {
     },
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Deal analysis: the results-page logic (verdict, profit-at-price, score, watch-outs).
+// Ported from Henry's live results page. The MAO core is reused from calculateMaxOffer
+// above (same formula) — this layer adds the price-based comparison and coaching.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type DealCategory = "positive" | "caution" | "negative";
+
+/**
+ * Version tag for the Offer Strength Score. The score weights below are a PLACEHOLDER
+ * model, carried over from the results-page mock-up — per that page's own note, they are
+ * "to be confirmed by Henry/team." The MAO and the verdict category are real; the 0–100
+ * score is not final. Bump this string when Henry signs off on the real model.
+ */
+export const SCORE_MODEL_VERSION = "offer-strength-score-placeholder-v1";
+
+export interface DealAnalysis extends MaxOfferResult {
+  /** Asking / purchase price the offer is compared against. */
+  price: number;
+  /** maxOffer - price. Positive => asking is at/below your max. */
+  gap: number;
+  /** gap as a percentage of maxOffer. */
+  gapPct: number;
+  /** Estimated profit if you actually buy at `price` (not at the MAO). */
+  profitAtPrice: number;
+  category: DealCategory;
+  categoryLabel: string;
+  categoryMessage: string;
+  /** 0–100. PLACEHOLDER model — see SCORE_MODEL_VERSION. Not yet Henry-confirmed. */
+  score: number;
+  watchouts: string[];
+  nextStep: string;
+}
+
+const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
+
+/** ±5% band around the MAO within which a deal is considered "tight" rather than clearly good/bad. */
+const TIGHT_BAND_PCT = 5;
+
+export function analyzeDeal(inputs: MaxOfferInputs, price: number): DealAnalysis {
+  const { maxOffer, breakdown } = calculateMaxOffer(inputs);
+
+  const {
+    arv: A,
+    renovationBudget: R,
+    desiredProfit: P,
+    holdMonths: m,
+    commissionPct: c,
+    saleClosingPct: s,
+    purchaseClosingPct: pc,
+    holdingInterestRate: i,
+  } = inputs;
+  const points = (inputs.loanPoints ?? 0) / 100;
+  const originationFee = inputs.originationFee ?? 0;
+
+  // Profit if you actually buy at the asking price (costs recomputed against `price`).
+  const commission = c * A;
+  const saleClosing = s * A;
+  const purchaseClosingAtPrice = pc * price;
+  const loanPointsAtPrice = points * price;
+  const totalHoldAtPrice = ((i * (price + R)) / 12) * m;
+  const profitAtPrice =
+    A - price - R - commission - saleClosing - purchaseClosingAtPrice - loanPointsAtPrice - originationFee - totalHoldAtPrice;
+
+  const gap = maxOffer - price;
+  const gapPct = maxOffer !== 0 ? (gap / maxOffer) * 100 : 0;
+
+  // Verdict category (real logic): room against the MAO, within a ±5% "tight" band.
+  const category: DealCategory =
+    gapPct >= TIGHT_BAND_PCT ? "positive" : gapPct > -TIGHT_BAND_PCT ? "caution" : "negative";
+  const categoryLabel =
+    category === "positive"
+      ? "Strong Offer Zone"
+      : category === "caution"
+        ? "Worth a Closer Look"
+        : "Needs Negotiation";
+  const categoryMessage =
+    category === "positive"
+      ? "Based on the assumptions entered, your offer appears to have room against the max offer target."
+      : category === "caution"
+        ? "This offer may be workable, but the margin is tight. Review your assumptions carefully."
+        : "This offer may need negotiation or a different strategy before it makes sense based on the numbers entered.";
+
+  // Offer Strength Score (0–100). PLACEHOLDER weighting — see SCORE_MODEL_VERSION.
+  const gapScore = clamp(60 + gapPct * 4, 0, 100);
+  const marginScore = A > 0 ? clamp((profitAtPrice / A / 0.15) * 100, 0, 100) : 0;
+  const renoScore = A > 0 ? clamp((1 - R / A / 0.5) * 100, 0, 100) : 100;
+  const holdScore = clamp((1 - Math.max(0, m - 6) / 12) * 100, 0, 100);
+  const score = Math.round(gapScore * 0.45 + marginScore * 0.3 + renoScore * 0.15 + holdScore * 0.1);
+
+  // Watch-outs (ported conditions).
+  const watchouts: string[] = [];
+  if (A > 0 && R / A > 0.15)
+    watchouts.push("Your renovation budget is a large share of ARV — get a firm contractor bid before you commit.");
+  if (c + s >= 0.09)
+    watchouts.push(
+      `Selling costs (commission + closing) run about ${Math.round((c + s) * 100)}% of ARV — confirm your agent split up front.`,
+    );
+  if (m > 6)
+    watchouts.push("Your hold time is longer than the 6-month default — every extra month adds holding cost.");
+  if (gap < 0)
+    watchouts.push("Your purchase price is above the max allowable offer — plan to negotiate before moving forward.");
+  if (profitAtPrice < P)
+    watchouts.push("Profit at your purchase price falls short of your desired profit target.");
+  if (breakdown.totalFinancingFees > 0 && A > 0 && breakdown.totalFinancingFees / A > 0.02)
+    watchouts.push(
+      "Loan points and origination fees are a notable share of ARV — confirm these terms with your lender before you rely on this number.",
+    );
+  if (watchouts.length === 0)
+    watchouts.push("No major red flags surfaced — still verify ARV with fresh comps before you commit.");
+
+  const nextStep =
+    category === "positive"
+      ? "The numbers here leave real room against your max offer. Verify your ARV with fresh comps and lock in a written contractor bid on the renovation. If both hold up, this is a deal worth moving on quickly and with confidence."
+      : category === "caution"
+        ? "This one is close. Tighten your renovation estimate with a real contractor bid and re-check your ARV against recent sold comps. Small changes to either number will decide whether this deal works — underwrite it carefully before you make an offer."
+        : "At these numbers the offer is a stretch. Either negotiate the purchase price down toward your max allowable offer, trim the renovation scope, or walk. Run the deal again with a lower price to see what it would take to bring it into range.";
+
+  return {
+    maxOffer,
+    breakdown,
+    price,
+    gap,
+    gapPct,
+    profitAtPrice,
+    category,
+    categoryLabel,
+    categoryMessage,
+    score,
+    watchouts,
+    nextStep,
+  };
+}
