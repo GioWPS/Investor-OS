@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "./login-form";
+import { IconLayers } from "../dashboard/icons";
+import "../brand-os.css";
 
 /**
- * Server component: if the visitor already has a valid session, skip the form and send
- * them to the dashboard. Otherwise render the magic-link request form.
+ * Server component: if already signed in, go to the dashboard; otherwise render the
+ * magic-link form in the Closing Table OS command-center brand style.
  */
 export default async function LoginPage() {
   const supabase = await createClient();
@@ -15,20 +17,37 @@ export default async function LoginPage() {
   if (user) redirect("/dashboard");
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-canvas px-6">
-      <div className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold text-ink">
-            Road to the Closing Table
-          </h1>
-          <p className="mt-1 text-muted">Free Investor Toolkit</p>
+    <div className="os-scope">
+      <div className="os-login-wrap">
+        <div className="os-login-card">
+          <div className="os-brand" style={{ justifyContent: "center", marginBottom: 26 }}>
+            <span className="os-brand-mark">
+              <IconLayers style={{ width: 20, height: 20, color: "#fff" }} />
+            </span>
+            <div>
+              <div className="os-brand-eyebrow">The Closing Table</div>
+              <div className="os-brand-name">Free Toolkit</div>
+            </div>
+          </div>
+
+          <div className="os-panel" style={{ padding: "30px 30px 32px" }}>
+            <div className="os-eyebrow" style={{ textAlign: "center" }}>— The Closing Table</div>
+            <h1
+              className="os-title"
+              style={{ fontSize: 34, textAlign: "center", margin: "8px 0 6px" }}
+            >
+              Sign in
+            </h1>
+            <p style={{ textAlign: "center", color: "var(--os-fg-2)", fontSize: 14, margin: "0 0 24px" }}>
+              We&apos;ll email you a secure sign-in link. No password needed.
+            </p>
+            <LoginForm />
+          </div>
+
+          <p style={{ textAlign: "center", color: "var(--os-fg-3)", fontSize: 12, marginTop: 18 }}>
+            Free tools for real estate investors — Max Offer, Funding Path, and more.
+          </p>
         </div>
-        <div className="rounded-xl border border-line bg-surface p-8">
-          <LoginForm />
-        </div>
-        <p className="mt-6 text-center text-xs text-muted">
-          We&apos;ll email you a secure sign-in link. No password needed.
-        </p>
       </div>
     </div>
   );
