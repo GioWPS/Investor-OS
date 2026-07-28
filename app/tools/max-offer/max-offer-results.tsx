@@ -383,10 +383,20 @@ export function MaxOfferResults({
                     </p>
                   </div>
                   <div className="cta-btns">
-                    <a className="btn-primary sm" href="https://seeyouattheclosingtable.com/2026webinar">
+                    <a
+                      className="btn-primary sm"
+                      href="https://seeyouattheclosingtable.com/webinar-signup-page"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       Register for the Live Monthly Webinar
                     </a>
-                    <a className="btn-ghost sm" href="https://www.seeyouattheclosingtable.com/">
+                    <a
+                      className="btn-ghost sm"
+                      href="https://www.seeyouattheclosingtable.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       Book a Call
                     </a>
                   </div>

@@ -23,7 +23,7 @@ const TOOL_ICON: Record<ToolKey, typeof IconCalculator> = {
   first_deal_blueprint: IconBlueprint,
 };
 
-const WEBINAR_URL = "https://seeyouattheclosingtable.com/2026webinar";
+const WEBINAR_URL = "https://seeyouattheclosingtable.com/webinar-signup-page";
 
 export interface DashboardViewProps {
   email: string;
@@ -92,7 +92,13 @@ export function DashboardView({
               {TOOLS.map((t) => {
                 const Icon = TOOL_ICON[t.key];
                 return t.status === "live" ? (
-                  <Link key={t.key} href={`/tools/${t.slug}`} className="os-navitem">
+                  <Link
+                    key={t.key}
+                    href={`/tools/${t.slug}`}
+                    target="_blank"
+                    rel="noopener"
+                    className="os-navitem"
+                  >
                     <Icon /> {t.name}
                   </Link>
                 ) : (
@@ -119,7 +125,13 @@ export function DashboardView({
             <div className="os-kicker">Live · Monthly</div>
             <h4>Get in the room</h4>
             <p>Bring your numbers to Henry and investors closing deals right now.</p>
-            <a className="os-btn os-btn-primary" href={WEBINAR_URL} style={{ width: "100%", justifyContent: "center", padding: "11px 16px" }}>
+            <a
+              className="os-btn os-btn-primary"
+              href={WEBINAR_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ width: "100%", justifyContent: "center", padding: "11px 16px" }}
+            >
               Join the Webinar
             </a>
           </div>
@@ -148,7 +160,7 @@ export function DashboardView({
           </p>
 
           <div style={{ display: "flex", gap: 12, marginTop: 22, flexWrap: "wrap" }}>
-            <Link className="os-btn os-btn-primary" href="/tools/max-offer">
+            <Link className="os-btn os-btn-primary" href="/tools/max-offer" target="_blank" rel="noopener">
               Open Max Offer Calculator →
             </Link>
             <a className="os-btn os-btn-ghost" href="#tools">
@@ -228,7 +240,13 @@ export function DashboardView({
                 </>
               );
               return t.status === "live" ? (
-                <Link key={t.key} href={`/tools/${t.slug}`} className="os-tool live">
+                <Link
+                  key={t.key}
+                  href={`/tools/${t.slug}`}
+                  target="_blank"
+                  rel="noopener"
+                  className="os-tool live"
+                >
                   {inner}
                 </Link>
               ) : (
