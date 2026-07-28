@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { TOOLS, type ToolKey } from "@/lib/tools/registry";
 import { signOut } from "./actions";
+import { TabNamer } from "./tab-namer";
 import {
   IconBlueprint,
   IconCalculator,
@@ -71,6 +72,7 @@ export function DashboardView({
 
   return (
     <div className="os-scope">
+      <TabNamer />
       <div className="os-shell">
         <aside className="os-side">
           <div className="os-brand">
@@ -96,7 +98,7 @@ export function DashboardView({
                     key={t.key}
                     href={`/tools/${t.slug}`}
                     target="_blank"
-                    rel="noopener"
+                    rel="opener"
                     className="os-navitem"
                   >
                     <Icon /> {t.name}
@@ -160,7 +162,7 @@ export function DashboardView({
           </p>
 
           <div style={{ display: "flex", gap: 12, marginTop: 22, flexWrap: "wrap" }}>
-            <Link className="os-btn os-btn-primary" href="/tools/max-offer" target="_blank" rel="noopener">
+            <Link className="os-btn os-btn-primary" href="/tools/max-offer" target="_blank" rel="opener">
               Open Max Offer Calculator →
             </Link>
             <a className="os-btn os-btn-ghost" href="#tools">
@@ -244,7 +246,7 @@ export function DashboardView({
                   key={t.key}
                   href={`/tools/${t.slug}`}
                   target="_blank"
-                  rel="noopener"
+                  rel="opener"
                   className="os-tool live"
                 >
                   {inner}

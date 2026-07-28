@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type CSSProperties } from "react";
 import { analyzeDeal, type MaxOfferInputs } from "@/lib/tools/max-offer";
+import { BackToDashboard } from "./back-to-dashboard";
 
 /** Adjust-panel state in DISPLAY units (percents as whole numbers, $ as numbers). */
 export interface AdjustState {
@@ -132,9 +133,12 @@ export function MaxOfferResults({
               <div className="brand-name">Max Offer Calculator</div>
             </div>
           </div>
-          <button className="btn-back no-print" type="button" onClick={onReset}>
-            ← Run Another Deal
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <BackToDashboard />
+            <button className="btn-back no-print" type="button" onClick={onReset}>
+              ← Run Another Deal
+            </button>
+          </div>
         </header>
 
         <div className="body-pad">

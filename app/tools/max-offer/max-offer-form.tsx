@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { runMaxOffer } from "./actions";
 import { MaxOfferResults, type AdjustState } from "./max-offer-results";
+import { BackToDashboard } from "./back-to-dashboard";
 
 const BRAND_LOGO =
   "https://assets.cdn.filesafe.space/4uMmDI2kosLMlzdAlUS8/media/6a1dd49ff563bf237f85f9b5.png";
@@ -176,7 +177,10 @@ export function MaxOfferForm({ userEmail }: { userEmail: string }) {
               <div className="brand-name">Max Offer Calculator</div>
             </div>
           </div>
-          <div className="header-tag">Free Deal Tool</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <BackToDashboard />
+            <span className="header-tag">Free Deal Tool</span>
+          </div>
         </header>
 
         <div className="body-pad">
