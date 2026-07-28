@@ -1,0 +1,102 @@
+<!--
+  Investor OS — Magic Link email template
+  Paste into: Supabase Dashboard → Authentication → Emails → "Magic Link" template.
+  Suggested Subject: Here's your magic link ⚡ — Investor OS
+
+  Notes:
+  - Uses the OS palette (near-black #06040a, lime #C6FF3D, purple #A969D5).
+  - Table-based + inline styles for broad email-client support. Web fonts (Anton /
+    Space Grotesk) load in clients that support them (e.g. Apple Mail) and fall back
+    to heavy system fonts everywhere else.
+  - {{ .ConfirmationURL }} is Supabase's one-time magic-link URL — do not rename it.
+  - The sender name ("Supabase Auth") is NOT set here; it comes from Supabase's email
+    service. Change it by configuring custom SMTP (e.g. Resend) in Auth settings.
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="supported-color-schemes" content="dark" />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+      a { text-decoration: none; }
+      .btn:hover { filter: brightness(1.06); }
+    </style>
+  </head>
+  <body style="margin:0; padding:0; background-color:#06040a;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#06040a" style="background-color:#06040a;">
+      <tr>
+        <td align="center" style="padding:32px 16px;">
+          <!-- container -->
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:100%;">
+
+            <!-- header / brand -->
+            <tr>
+              <td align="center" style="padding:8px 0 24px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td style="padding-right:12px;">
+                      <div style="width:40px; height:40px; border-radius:11px; background:linear-gradient(160deg,#a969d5,#6a3bb0); text-align:center; line-height:40px; font-family:'Anton','Arial Black',Arial,sans-serif; font-size:20px; color:#ffffff;">◆</div>
+                    </td>
+                    <td align="left">
+                      <div style="font-family:'Space Grotesk',Arial,sans-serif; font-size:10px; letter-spacing:0.22em; text-transform:uppercase; color:#c197d2;">Henry Washington · The Closing Table</div>
+                      <div style="font-family:'Anton','Arial Black',Arial,sans-serif; font-size:20px; letter-spacing:0.02em; text-transform:uppercase; color:#f4f1f7; margin-top:3px;">Investor OS</div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- card -->
+            <tr>
+              <td style="background-color:#0d0a15; border:1px solid rgba(255,255,255,0.10); border-radius:18px; padding:40px 40px 36px;">
+                <div style="font-family:'Space Grotesk',Arial,sans-serif; font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:#c6ff3d; margin-bottom:14px;">Magic Link</div>
+
+                <h1 style="margin:0 0 14px; font-family:'Anton','Arial Black',Arial,sans-serif; font-size:34px; line-height:1.05; text-transform:uppercase; color:#f4f1f7; letter-spacing:0.005em;">Here&rsquo;s your way in.</h1>
+
+                <p style="margin:0 0 28px; font-family:'Space Grotesk',Arial,sans-serif; font-size:15px; line-height:1.6; color:rgba(244,241,247,0.72);">
+                  Tap the button below to sign in to your Road to the Closing Table toolkit — your Max Offer Calculator, saved deals, and more. This link expires shortly and can only be used once.
+                </p>
+
+                <!-- bulletproof button -->
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td align="center" bgcolor="#c6ff3d" style="border-radius:12px;">
+                      <a class="btn" href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block; padding:15px 30px; font-family:'Space Grotesk',Arial,sans-serif; font-size:15px; font-weight:700; color:#14210a; border-radius:12px;">Sign in to Investor OS &rarr;</a>
+                    </td>
+                  </tr>
+                </table>
+
+                <p style="margin:28px 0 0; font-family:'Space Grotesk',Arial,sans-serif; font-size:12.5px; line-height:1.6; color:rgba(244,241,247,0.42);">
+                  Button not working? Copy and paste this link into your browser:<br />
+                  <a href="{{ .ConfirmationURL }}" style="color:#a969d5; word-break:break-all;">{{ .ConfirmationURL }}</a>
+                </p>
+
+                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.08); margin:28px 0 0;" />
+
+                <p style="margin:20px 0 0; font-family:'Space Grotesk',Arial,sans-serif; font-size:12.5px; line-height:1.6; color:rgba(244,241,247,0.42);">
+                  Didn&rsquo;t request this? You can safely ignore this email — no one can sign in without the link above.
+                </p>
+              </td>
+            </tr>
+
+            <!-- footer -->
+            <tr>
+              <td align="center" style="padding:24px 16px 8px;">
+                <div style="font-family:'Space Grotesk',Arial,sans-serif; font-size:11px; letter-spacing:0.06em; color:rgba(244,241,247,0.35);">
+                  Road to the Closing Table · Free Investor Toolkit
+                </div>
+                <div style="font-family:'Space Grotesk',Arial,sans-serif; font-size:11px; color:rgba(244,241,247,0.28); margin-top:6px;">
+                  Find it. Fund it. Close it.
+                </div>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
