@@ -1,0 +1,4 @@
+- [user-gio](user-gio.md) — Gio: CS grad, learning the Next.js/Supabase stack; explain the why + flag security
+- [investor-os-project-state](investor-os-project-state.md) — Free toolkit build state: foundation + Max Offer (branded, tested) + OS command-center dashboard/login done & pushed; email branding, score weights, GHL verdict tag, tools #2/#3 pending
+- [investor-os-email-branding](investor-os-email-branding.md) — Steps to make the branded magic-link email live via Resend SMTP (NOT a Supabase Pro issue); paused at domain/DNS choice
+- [feedback-remind-parked-after-push](feedback-remind-parked-after-push.md) — After every push on Investor-OS, remind Gio of parked/pending items
