@@ -72,7 +72,7 @@ export function DashboardView({
   const osFuture: { name: string; Icon: typeof IconReports; href?: string }[] = [
     { name: "Lead Pipeline", Icon: IconPipeline },
     { name: "AI Deal Coach", Icon: IconCoach },
-    { name: "Market Watch", Icon: IconMarket },
+    { name: "Market Watch", Icon: IconMarket, href: "/dashboard/market-watch" },
     { name: "Playbooks", Icon: IconPlaybook },
     { name: "Reports", Icon: IconReports, href: "/tools/max-offer/history" },
     { name: "Mastermind", Icon: IconMastermind },
