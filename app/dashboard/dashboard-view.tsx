@@ -54,19 +54,27 @@ export function DashboardView({
     background: `conic-gradient(var(--os-lime) 0% ${progressPct}%, rgba(255,255,255,0.08) ${progressPct}% 100%)`,
   };
 
-  const stats = [
+  const stats: {
+    icon: typeof IconCalculator;
+    value: string;
+    label: string;
+    meta: string;
+    metaText: string;
+    href?: string;
+  }[] = [
     { icon: IconCheck, value: `${completedCount}/${TOOLS.length}`, label: "Tools Completed", meta: "acc-lime", metaText: progressPct === 100 ? "all done" : "keep going" },
-    { icon: IconCalculator, value: String(maxOfferRuns), label: "Deals Analyzed", meta: "acc-teal", metaText: "max offer" },
+    { icon: IconCalculator, value: String(maxOfferRuns), label: "Deals Analyzed", meta: "acc-teal", metaText: "view reports →", href: "/tools/max-offer/history" },
     { icon: IconLayers, value: stageShort, label: "Investor Stage", meta: "acc-purple", metaText: "from your inputs" },
     { icon: IconReports, value: lastActivity ? new Date(lastActivity).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—", label: "Last Activity", meta: "acc-orange", metaText: `${totalRuns} total runs` },
   ];
 
-  const osFuture = [
+  // "Reports" is live (deal history); the rest stay locked previews of future CTOS modules.
+  const osFuture: { name: string; Icon: typeof IconReports; href?: string }[] = [
     { name: "Lead Pipeline", Icon: IconPipeline },
     { name: "AI Deal Coach", Icon: IconCoach },
     { name: "Market Watch", Icon: IconMarket },
     { name: "Playbooks", Icon: IconPlaybook },
-    { name: "Reports", Icon: IconReports },
+    { name: "Reports", Icon: IconReports, href: "/tools/max-offer/history" },
     { name: "Mastermind", Icon: IconMastermind },
   ];
 
@@ -115,11 +123,17 @@ export function DashboardView({
           <div>
             <div className="os-navlabel">Closing Table OS</div>
             <nav className="os-nav">
-              {osFuture.map(({ name, Icon }) => (
-                <span key={name} className="os-navitem locked">
-                  <Icon /> {name} <span className="os-lock">Soon</span>
-                </span>
-              ))}
+              {osFuture.map(({ name, Icon, href }) =>
+                href ? (
+                  <Link key={name} href={href} target="_blank" rel="opener" className="os-navitem">
+                    <Icon /> {name}
+                  </Link>
+                ) : (
+                  <span key={name} className="os-navitem locked">
+                    <Icon /> {name} <span className="os-lock">Soon</span>
+                  </span>
+                ),
+              )}
             </nav>
           </div>
 
@@ -197,8 +211,8 @@ export function DashboardView({
             <div className="os-grid" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
               {stats.map((s) => {
                 const Icon = s.icon;
-                return (
-                  <div className="os-panel" key={s.label}>
+                const inner = (
+                  <>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span className="os-stat-ico">
                         <Icon />
@@ -207,6 +221,24 @@ export function DashboardView({
                     </div>
                     <div className="os-stat-value">{s.value}</div>
                     <div className="os-stat-label">{s.label}</div>
+                  </>
+                );
+                // Same new-tab pattern as the tool links (rel="opener" so the tab-jump works).
+                return s.href ? (
+                  <Link
+                    key={s.label}
+                    href={s.href}
+                    target="_blank"
+                    rel="opener"
+                    className="os-panel"
+                    style={{ color: "inherit", textDecoration: "none" }}
+                    title="See every deal you've analyzed"
+                  >
+                    {inner}
+                  </Link>
+                ) : (
+                  <div className="os-panel" key={s.label}>
+                    {inner}
                   </div>
                 );
               })}

@@ -55,22 +55,30 @@ export function MaxOfferResults({
   firstName,
   address,
   onReset,
+  dateLabel,
+  resetLabel = "Run Another Deal",
 }: {
   initial: AdjustState;
   firstName: string;
   address: string;
   onReset: () => void;
+  /** Shown in "Prepared for … · <date>". Defaults to today; pass the saved run date when re-opening a report. */
+  dateLabel?: string;
+  /** Label for the reset buttons — e.g. "Back to Deal History" when opened from the archive. */
+  resetLabel?: string;
 }) {
   const [a, setA] = useState<AdjustState>(initial);
   const [revealed, setRevealed] = useState(false);
 
   const r = useMemo(() => analyzeDeal(toInputs(a), a.price), [a]);
 
-  const today = new Date().toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  const dateText =
+    dateLabel ??
+    new Date().toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   const ring = RING[r.category];
 
   function set<K extends keyof AdjustState>(key: K, value: AdjustState[K]) {
@@ -136,7 +144,7 @@ export function MaxOfferResults({
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <BackToDashboard />
             <button className="btn-back no-print" type="button" onClick={onReset}>
-              ← Run Another Deal
+              ← {resetLabel}
             </button>
           </div>
         </header>
@@ -150,7 +158,7 @@ export function MaxOfferResults({
                 <h2 className="report-title">Your Offer Breakdown</h2>
                 <p className="report-sub">Here&apos;s how your numbers stack up.</p>
                 <div className="report-meta">
-                  Prepared for {firstName || "you"} · {address} · {today}
+                  Prepared for {firstName || "you"} · {address} · {dateText}
                 </div>
               </div>
 
@@ -412,7 +420,7 @@ export function MaxOfferResults({
                   🖨 Print / Save as PDF
                 </button>
                 <button className="btn-violet" type="button" onClick={onReset}>
-                  Run Another Deal
+                  {resetLabel}
                 </button>
               </div>
 
