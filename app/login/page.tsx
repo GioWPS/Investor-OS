@@ -6,7 +6,8 @@ import "../brand-os.css";
 
 /**
  * Server component: if already signed in, go to the dashboard; otherwise render the
- * magic-link form in the Closing Table OS command-center brand style.
+ * email + password form (sign in / create account / forgot password) in the Closing
+ * Table OS command-center brand style.
  */
 export default async function LoginPage() {
   const supabase = await createClient();
@@ -31,16 +32,6 @@ export default async function LoginPage() {
           </div>
 
           <div className="os-panel" style={{ padding: "30px 30px 32px" }}>
-            <div className="os-eyebrow" style={{ textAlign: "center" }}>— The Closing Table</div>
-            <h1
-              className="os-title"
-              style={{ fontSize: 34, textAlign: "center", margin: "8px 0 6px" }}
-            >
-              Sign in
-            </h1>
-            <p style={{ textAlign: "center", color: "var(--os-fg-2)", fontSize: 14, margin: "0 0 24px" }}>
-              We&apos;ll email you a secure sign-in link. No password needed.
-            </p>
             <LoginForm />
           </div>
 

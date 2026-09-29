@@ -40,7 +40,9 @@ fire the GHL webhook, and render. This is what lets logic be *lifted* into Closi
 6. Never trust client-supplied identity; derive the user from the server session.
 
 ## Stack + commands
-- Next.js 15 (App Router) + TypeScript + Tailwind 3, Supabase (Postgres + Auth + RLS), magic-link auth.
+- Next.js 15 (App Router) + TypeScript + Tailwind 3, Supabase (Postgres + Auth + RLS).
+- Auth is **email + password** (confirm-email on signup, emailed reset). Tazz's decision, Sep 2026 —
+  this supersedes the "magic-link only" line still in `FREE-TOOLKIT-PROJECT-SPEC.md` §3 and the skill.
 - `npm run dev` (dev server) · `npm run build` · `npm test` (vitest) · `npx tsc --noEmit` (typecheck).
 - Config changes (`next.config.mjs`, `.env.local`, `tailwind.config.ts`) require a dev restart.
 - Dev caching is disabled via `next.config.mjs` (`Cache-Control: no-store` in dev only) so the

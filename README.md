@@ -12,7 +12,7 @@ dashboard — Max Offer Calculator, Funding Path Finder, First Deal Blueprint.
 
 - **Next.js (App Router)** — server components, server actions, route handlers in one place
 - **Supabase** — Postgres + Auth + Row Level Security (per-user data isolation)
-- **Auth** — passwordless magic-link email only
+- **Auth** — email + password (Supabase Auth; email confirmation on signup, emailed password reset). Changed from magic-link by Tazz's decision, Sep 2026.
 - **Hosting** — Vercel (prod), local for dev
 - **GHL** — one-way webhook (app → GHL) for CRM tagging. GHL never calls the app for anything auth-critical.
 
@@ -46,7 +46,8 @@ Table OS later instead of rewritten.
 
 ```
 app/
-  login/                  magic-link request
+  login/                  sign in / create account / forgot password
+  update-password/        set a new password (from the reset email)
   auth/callback/          Supabase auth callback (code -> session)
   dashboard/              the toolkit dashboard (protected)
   tools/max-offer/        Max Offer Calculator

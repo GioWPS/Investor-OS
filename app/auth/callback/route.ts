@@ -3,11 +3,14 @@ import { createClient } from "@/lib/supabase/server";
 import { signupPayload, syncToGhl } from "@/lib/ghl";
 
 /**
- * Supabase redirects the magic link here with a one-time `code`. We exchange it for a
- * session (which sets the auth cookies), then send the user on to the dashboard.
+ * Supabase's emailed links land here with a one-time `code` — the "Confirm signup" email
+ * for new accounts, and the "Reset password" email (which passes ?next=/update-password).
+ * We exchange the code for a session (which sets the auth cookies), then send the user on.
  *
  * On a brand-new account this is where we fire the one-time "signup" webhook to GHL —
  * fire-and-forget-but-logged, so a GHL problem never blocks the user from getting in.
+ * (This works because new accounts must confirm their email, so every new user passes
+ * through here exactly once before their first sign-in.)
  */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
