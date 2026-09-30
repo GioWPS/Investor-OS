@@ -89,8 +89,7 @@ export function DashboardView({
           <div className="os-brand">
             <BrandMark />
             <div>
-              <div className="os-brand-eyebrow">The Closing Table</div>
-              <div className="os-brand-name">Free Toolkit</div>
+              <div className="os-brand-name">Closing Table OS</div>
             </div>
           </div>
 
@@ -177,7 +176,7 @@ export function DashboardView({
             </form>
           </div>
 
-          <div className="os-eyebrow">— The Closing Table</div>
+          <div className="os-eyebrow">— Closing Table OS</div>
           <h1 className="os-title">Welcome, {firstName}.</h1>
           <p className="os-sub">
             You&apos;re building toward your first close. <b>Find it. Fund it. Close it.</b>

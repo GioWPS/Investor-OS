@@ -24,7 +24,6 @@ export default async function LoginPage() {
           <div className="os-brand" style={{ justifyContent: "center", marginBottom: 26 }}>
             <BrandMark />
             <div>
-              <div className="os-brand-eyebrow">The Closing Table</div>
               <div className="os-brand-name">Closing Table OS</div>
             </div>
           </div>
