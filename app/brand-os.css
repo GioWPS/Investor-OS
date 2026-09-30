@@ -304,6 +304,26 @@
   display: grid;
   gap: 16px;
 }
+.os-hero-grid {
+  grid-template-columns: minmax(260px, 1fr) 2fr;
+  margin-top: 26px;
+}
+.os-stats-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+.os-tools-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.os-navwrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.os-side-promo-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 9px 14px;
+}
 .os-panel {
   background: var(--os-panel);
   border: 1px solid var(--os-line);
@@ -496,30 +516,90 @@
   filter: brightness(1.15);
 }
 
-/* responsive */
+/* responsive — phones and small tablets: the sidebar becomes a compact header */
 @media (max-width: 900px) {
   .os-shell {
     grid-template-columns: 1fr;
   }
+  .os-side,
+  .os-main {
+    min-width: 0;
+  }
   .os-side {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 16px;
     border-right: none;
     border-bottom: 1px solid var(--os-line);
     position: static;
     height: auto;
     overflow: visible;
   }
-  .os-nav {
+  /* one swipeable row of the live links; "Soon" items are hidden on phones */
+  .os-navwrap {
     flex-direction: row;
-    flex-wrap: wrap;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: -16px;
+    padding-inline: 16px;
   }
-  .os-navlabel,
-  .os-side-promo {
+  .os-navwrap::-webkit-scrollbar {
     display: none;
   }
+  .os-navgroup,
+  .os-nav {
+    display: contents;
+  }
+  .os-navlabel,
+  .os-navitem.locked {
+    display: none;
+  }
+  .os-navitem {
+    flex: none;
+    white-space: nowrap;
+    padding: 8px 12px;
+  }
+  /* webinar box shrinks to a slim bar instead of disappearing */
+  .os-side-promo {
+    flex: none;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px 9px 14px;
+  }
+  .os-side-promo h4,
+  .os-side-promo p {
+    display: none;
+  }
+  .os-side-promo .os-kicker {
+    white-space: nowrap;
+  }
+  .os-side-promo .os-side-promo-btn {
+    width: auto;
+    margin: 0 0 0 auto;
+    padding: 8px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .os-hero-grid {
+    grid-template-columns: 1fr;
+  }
   .os-main {
-    padding: 22px 18px 50px;
+    padding: 20px 16px 50px;
+  }
+  /* very narrow screens: long text truncates instead of pushing past the edge */
+  .os-side-promo .os-kicker,
+  .os-userchip,
+  .os-userchip-text {
+    min-width: 0;
+  }
+  .os-side-promo .os-kicker,
+  .os-userchip-email {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
+

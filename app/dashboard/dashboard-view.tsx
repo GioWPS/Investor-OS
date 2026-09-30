@@ -93,7 +93,8 @@ export function DashboardView({
             </div>
           </div>
 
-          <div>
+          <div className="os-navwrap">
+          <div className="os-navgroup">
             <div className="os-navlabel">Your Toolkit</div>
             <nav className="os-nav">
               <span className="os-navitem active">
@@ -118,7 +119,7 @@ export function DashboardView({
             </nav>
           </div>
 
-          <div>
+          <div className="os-navgroup">
             <div className="os-navlabel">Closing Table OS</div>
             <nav className="os-nav">
               {osFuture.map(({ name, Icon, href, sameTab }) =>
@@ -140,6 +141,7 @@ export function DashboardView({
               )}
             </nav>
           </div>
+          </div>
 
           <div className="os-side-promo">
             <div className="os-kicker">
@@ -149,11 +151,10 @@ export function DashboardView({
             <h4>Get in the room</h4>
             <p>Bring your numbers to Henry and investors closing deals right now.</p>
             <a
-              className="os-btn os-btn-primary"
+              className="os-btn os-btn-primary os-side-promo-btn"
               href={WEBINAR_URL}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ width: "100%", justifyContent: "center", padding: "9px 14px" }}
             >
               Join the Webinar
             </a>
@@ -164,13 +165,13 @@ export function DashboardView({
           <div className="os-topbar">
             <div className="os-userchip">
               <span className="os-avatar">{initials}</span>
-              <div style={{ lineHeight: 1.2 }}>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>{email}</div>
+              <div className="os-userchip-text" style={{ lineHeight: 1.2 }}>
+                <div className="os-userchip-email" style={{ fontSize: 13, fontWeight: 600 }}>{email}</div>
                 <div className="os-kicker">Toolkit Member</div>
               </div>
             </div>
             <form action={signOut}>
-              <button type="submit" className="os-btn os-btn-ghost" style={{ padding: "10px 16px" }}>
+              <button type="submit" className="os-btn os-btn-ghost" style={{ padding: "10px 16px", whiteSpace: "nowrap" }}>
                 Sign out
               </button>
             </form>
@@ -221,7 +222,7 @@ export function DashboardView({
             </Link>
           )}
 
-          <div className="os-grid" style={{ gridTemplateColumns: "minmax(260px, 1fr) 2fr", marginTop: 26 }}>
+          <div className="os-grid os-hero-grid">
             <div className="os-panel" style={{ display: "flex", alignItems: "center", gap: 22 }}>
               <div className="os-ring" style={ringStyle}>
                 <div className="os-ring-inner" />
@@ -245,7 +246,7 @@ export function DashboardView({
               </div>
             </div>
 
-            <div className="os-grid" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
+            <div className="os-grid os-stats-grid">
               {stats.map((s) => {
                 const Icon = s.icon;
                 const inner = (
@@ -282,7 +283,7 @@ export function DashboardView({
           <h2 className="os-section-title" id="tools">
             Your Tools
           </h2>
-          <div className="os-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
+          <div className="os-grid os-tools-grid">
             {TOOLS.map((t) => {
               const last = completed[t.key];
               const done = !!last;
