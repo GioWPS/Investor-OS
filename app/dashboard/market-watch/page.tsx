@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { fetchSeries, fredConfigured, resolveMetro, type SeriesPoint } from "@/lib/market/fred";
 import { matchMetros, metroSeries, METROS, NATIONAL_SERIES, parseCityState } from "@/lib/market/metros";
 import { MarketWatchView, type MetroBundle } from "./market-watch-view";
+import { LIVE_MODULES } from "@/lib/modules";
 import "../../brand-os.css";
 
 /**
@@ -13,6 +14,8 @@ import "../../brand-os.css";
  * server-side; the FRED key never reaches the browser.
  */
 export default async function MarketWatchPage() {
+  if (!LIVE_MODULES.marketWatch) redirect("/dashboard");
+
   const supabase = await createClient();
   const {
     data: { user },

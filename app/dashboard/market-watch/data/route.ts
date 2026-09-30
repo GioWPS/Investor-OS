@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { fetchSeries, fredConfigured } from "@/lib/market/fred";
 import { METROS, metroSeries } from "@/lib/market/metros";
+import { LIVE_MODULES } from "@/lib/modules";
 
 /**
  * On-demand metro data for Market Watch's "All tracked markets" dropdown group.
@@ -9,6 +10,8 @@ import { METROS, metroSeries } from "@/lib/market/metros";
  * curated metros, so this can never be used to proxy arbitrary FRED queries.
  */
 export async function GET(request: Request) {
+  if (!LIVE_MODULES.marketWatch) return NextResponse.json({ error: "not found" }, { status: 404 });
+
   const supabase = await createClient();
   const {
     data: { user },

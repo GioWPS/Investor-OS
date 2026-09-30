@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isLeadStage, type LeadStage } from "@/lib/pipeline";
+import { LIVE_MODULES } from "@/lib/modules";
 
 /**
  * Pipeline server actions. The acting user is ALWAYS the session user (checklist #6);
@@ -23,6 +24,9 @@ export type LeadActionResult = { ok: true } | { ok: false; error: string };
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
+// Server actions are callable endpoints even when the page redirects — gate them too.
+const MODULE_OFF: LeadActionResult = { ok: false, error: "The pipeline isn't available yet." };
+
 function cleanText(v: unknown, max: number): string | null {
   if (typeof v !== "string") return null;
   const t = v.trim().slice(0, max);
@@ -39,6 +43,7 @@ export async function createLead(values: {
   stage?: LeadStage;
   nextFollowUp?: string | null;
 }): Promise<LeadActionResult> {
+  if (!LIVE_MODULES.pipeline) return MODULE_OFF;
   const supabase = await createClient();
   const {
     data: { user },
@@ -65,6 +70,7 @@ export async function createLead(values: {
 }
 
 export async function updateLead(id: string, patch: LeadPatch): Promise<LeadActionResult> {
+  if (!LIVE_MODULES.pipeline) return MODULE_OFF;
   const supabase = await createClient();
   const {
     data: { user },
@@ -99,6 +105,7 @@ export async function updateLead(id: string, patch: LeadPatch): Promise<LeadActi
 }
 
 export async function deleteLead(id: string): Promise<LeadActionResult> {
+  if (!LIVE_MODULES.pipeline) return MODULE_OFF;
   const supabase = await createClient();
   const {
     data: { user },

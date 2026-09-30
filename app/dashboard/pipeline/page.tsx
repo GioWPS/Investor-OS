@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { addressesMatch, type LeadStage } from "@/lib/pipeline";
+import { LIVE_MODULES } from "@/lib/modules";
 import { PipelineView, type LeadRow } from "./pipeline-view";
 import "../../brand-os.css";
 
@@ -10,6 +11,8 @@ import "../../brand-os.css";
  * its property so analysis and pipeline stay connected.
  */
 export default async function PipelinePage() {
+  if (!LIVE_MODULES.pipeline) redirect("/dashboard");
+
   const supabase = await createClient();
   const {
     data: { user },
