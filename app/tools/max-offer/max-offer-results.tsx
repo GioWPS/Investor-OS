@@ -405,7 +405,7 @@ export function MaxOfferResults({
                     </a>
                     <a
                       className="btn-ghost sm"
-                      href="https://www.seeyouattheclosingtable.com/"
+                      href="https://seeyouattheclosingtable.com/apply"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
