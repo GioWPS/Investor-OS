@@ -17,12 +17,21 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: profile }, { data: results }] = await Promise.all([
+  // Nudge window: follow-ups due within a week count as needing attention (Gio's call).
+  const windowEnd = new Date();
+  windowEnd.setDate(windowEnd.getDate() + 7);
+  const [{ data: profile }, { data: results }, { count: dueFollowUps }] = await Promise.all([
     supabase.from("profiles").select("stage").eq("id", user.id).single(),
     supabase
       .from("tool_results")
       .select("tool, created_at, inputs")
       .order("created_at", { ascending: false }),
+    supabase
+      .from("leads")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .lte("next_follow_up", windowEnd.toLocaleDateString("en-CA"))
+      .not("stage", "in", "(closed,dead)"),
   ]);
 
   const completed: Partial<Record<ToolKey, string>> = {};
@@ -46,6 +55,7 @@ export default async function DashboardPage() {
       maxOfferRuns={(results ?? []).filter((r) => r.tool === "max_offer").length}
       lastActivity={results?.[0]?.created_at as string | undefined}
       stageShort={profile?.stage ? (STAGE_SHORT[profile.stage] ?? "NEW") : "NEW"}
+      dueFollowUps={dueFollowUps ?? 0}
     />
   );
 }

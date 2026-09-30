@@ -35,6 +35,8 @@ export interface DashboardViewProps {
   maxOfferRuns: number;
   lastActivity?: string;
   stageShort: string;
+  /** leads with a follow-up due today or overdue */
+  dueFollowUps: number;
 }
 
 export function DashboardView({
@@ -45,6 +47,7 @@ export function DashboardView({
   maxOfferRuns,
   lastActivity,
   stageShort,
+  dueFollowUps,
 }: DashboardViewProps) {
   const completedCount = TOOLS.filter((t) => completed[t.key]).length;
   const progressPct = Math.round((completedCount / TOOLS.length) * 100);
@@ -70,7 +73,7 @@ export function DashboardView({
 
   // "Reports" is live (deal history); the rest stay locked previews of future CTOS modules.
   const osFuture: { name: string; Icon: typeof IconReports; href?: string }[] = [
-    { name: "Lead Pipeline", Icon: IconPipeline },
+    { name: "Lead Pipeline", Icon: IconPipeline, href: "/dashboard/pipeline" },
     { name: "AI Deal Coach", Icon: IconCoach },
     { name: "Market Watch", Icon: IconMarket, href: "/dashboard/market-watch" },
     { name: "Playbooks", Icon: IconPlaybook },
@@ -183,6 +186,36 @@ export function DashboardView({
               View your tools
             </a>
           </div>
+
+          {dueFollowUps > 0 && (
+            <Link
+              href="/dashboard/pipeline"
+              target="_blank"
+              rel="opener"
+              className="os-panel"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                marginTop: 18,
+                padding: "14px 18px",
+                color: "inherit",
+                textDecoration: "none",
+                borderColor: "rgba(242, 106, 28, 0.45)",
+              }}
+            >
+              <span style={{ fontSize: 18 }}>⏰</span>
+              <span style={{ fontSize: 14 }}>
+                <b>
+                  {dueFollowUps} follow-up{dueFollowUps === 1 ? "" : "s"} due within the week
+                </b>{" "}
+                in your pipeline — deals die when the follow-up doesn&apos;t happen.
+              </span>
+              <span className="acc-orange" style={{ marginLeft: "auto", fontWeight: 700, fontSize: 13, whiteSpace: "nowrap" }}>
+                Open Pipeline →
+              </span>
+            </Link>
+          )}
 
           <div className="os-grid" style={{ gridTemplateColumns: "minmax(260px, 1fr) 2fr", marginTop: 26 }}>
             <div className="os-panel" style={{ display: "flex", alignItems: "center", gap: 22 }}>

@@ -13,12 +13,20 @@ import "./moc.css";
  * (lib/tools/max-offer.ts) via the server action, saves, fires GHL, and renders. The MAO
  * math lives only in the pure module.
  */
-export default async function MaxOfferPage() {
+export default async function MaxOfferPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ address?: string | string[] }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  return <MaxOfferForm userEmail={user.email ?? ""} />;
+  // Pipeline's "Analyze" button prefills the property (?address=…).
+  const { address } = await searchParams;
+  const initialAddress = typeof address === "string" ? address.slice(0, 140) : "";
+
+  return <MaxOfferForm userEmail={user.email ?? ""} initialAddress={initialAddress} />;
 }

@@ -18,10 +18,10 @@ const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
 type Values = Record<string, string>;
 
-const INITIAL = (email: string): Values => ({
+const INITIAL = (email: string, address = ""): Values => ({
   firstName: "",
   email,
-  address: "",
+  address,
   arv: "",
   price: "",
   reno: "",
@@ -38,8 +38,15 @@ const INITIAL = (email: string): Values => ({
   experience: "",
 });
 
-export function MaxOfferForm({ userEmail }: { userEmail: string }) {
-  const [v, setV] = useState<Values>(() => INITIAL(userEmail));
+export function MaxOfferForm({
+  userEmail,
+  initialAddress = "",
+}: {
+  userEmail: string;
+  /** Prefilled property (e.g. from a pipeline lead's "Analyze" button). */
+  initialAddress?: string;
+}) {
+  const [v, setV] = useState<Values>(() => INITIAL(userEmail, initialAddress));
   const [ruleOfThumb, setRuleOfThumb] = useState(true);
   const [errors, setErrors] = useState<Set<string>>(new Set());
   const [submitting, setSubmitting] = useState(false);
