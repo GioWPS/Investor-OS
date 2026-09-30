@@ -319,6 +319,15 @@
   flex-direction: column;
   gap: 14px;
 }
+.os-sidehead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.os-mobile-account {
+  display: none;
+}
 .os-side-promo-btn {
   width: 100%;
   justify-content: center;
@@ -516,7 +525,7 @@
   filter: brightness(1.15);
 }
 
-/* responsive — phones and small tablets: the sidebar becomes a compact header */
+/* responsive — phones and small tablets: the sidebar becomes a pinned header */
 @media (max-width: 900px) {
   .os-shell {
     grid-template-columns: 1fr;
@@ -525,28 +534,63 @@
   .os-main {
     min-width: 0;
   }
+  /* pinned header: brand + account, nav, webinar bar */
   .os-side {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
-    padding: 14px 16px;
+    gap: 9px;
+    padding: 10px 14px 12px;
     border-right: none;
     border-bottom: 1px solid var(--os-line);
-    position: static;
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 20;
     height: auto;
     overflow: visible;
+    background: rgba(6, 4, 10, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
-  /* one swipeable row of the live links; "Soon" items are hidden on phones */
+  .os-desktop-only {
+    display: none;
+  }
+  .os-brand {
+    padding: 0;
+    gap: 8px;
+    flex: none;
+  }
+  .os-brand .os-brand-mark {
+    width: 30px;
+    height: 30px;
+  }
+  .os-brand-name {
+    font-size: 14px;
+    white-space: nowrap;
+    margin-top: 0;
+  }
+  .os-mobile-account {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+  .os-avatar-sm {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+    flex: none;
+  }
+  .os-signout-sm {
+    padding: 5px 9px;
+    font-size: 11.5px;
+    border-radius: 9px;
+    white-space: nowrap;
+    flex: none;
+  }
+  /* nav: every live link fits on one row, no sideways scrolling */
   .os-navwrap {
     flex-direction: row;
     gap: 6px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    margin-inline: -16px;
-    padding-inline: 16px;
-  }
-  .os-navwrap::-webkit-scrollbar {
-    display: none;
   }
   .os-navgroup,
   .os-nav {
@@ -557,30 +601,36 @@
     display: none;
   }
   .os-navitem {
-    flex: none;
-    white-space: nowrap;
-    padding: 8px 12px;
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+    padding: 7px 6px;
+    font-size: 12px;
+    line-height: 1.2;
+    border-radius: 9px;
   }
-  /* webinar box shrinks to a slim bar instead of disappearing */
+  .os-navitem svg {
+    display: none;
+  }
+  /* webinar box shrinks to a slim bar */
   .os-side-promo {
     flex: none;
     flex-direction: row;
     align-items: center;
     gap: 10px;
-    padding: 9px 10px 9px 14px;
+    padding: 7px 7px 7px 12px;
+    border-radius: 12px;
   }
   .os-side-promo h4,
   .os-side-promo p {
     display: none;
   }
-  .os-side-promo .os-kicker {
-    white-space: nowrap;
-  }
   .os-side-promo .os-side-promo-btn {
     width: auto;
     margin: 0 0 0 auto;
-    padding: 8px 14px;
-    font-size: 13px;
+    padding: 7px 12px;
+    font-size: 12.5px;
     white-space: nowrap;
   }
   .os-hero-grid {
@@ -589,14 +639,9 @@
   .os-main {
     padding: 20px 16px 50px;
   }
-  /* very narrow screens: long text truncates instead of pushing past the edge */
-  .os-side-promo .os-kicker,
-  .os-userchip,
-  .os-userchip-text {
+  /* the "Live · Monthly" label truncates before the button would overflow */
+  .os-side-promo .os-kicker {
     min-width: 0;
-  }
-  .os-side-promo .os-kicker,
-  .os-userchip-email {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

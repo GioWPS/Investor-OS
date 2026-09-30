@@ -52,7 +52,7 @@ export function DashboardView({
 }: DashboardViewProps) {
   const completedCount = TOOLS.filter((t) => completed[t.key]).length;
   const progressPct = Math.round((completedCount / TOOLS.length) * 100);
-  const initials = firstName.slice(0, 2).toUpperCase();
+  const initial = firstName.slice(0, 1).toUpperCase();
 
   const ringStyle: CSSProperties = {
     background: `conic-gradient(var(--os-lime) 0% ${progressPct}%, rgba(255,255,255,0.08) ${progressPct}% 100%)`,
@@ -86,10 +86,23 @@ export function DashboardView({
     <div className="os-scope">
       <div className="os-shell">
         <aside className="os-side">
-          <div className="os-brand">
-            <BrandMark />
-            <div>
-              <div className="os-brand-name">Closing Table OS</div>
+          <div className="os-sidehead">
+            <div className="os-brand">
+              <BrandMark />
+              <div>
+                <div className="os-brand-name">Closing Table OS</div>
+              </div>
+            </div>
+            {/* Phones only: the account chip + sign out live in the pinned header. */}
+            <div className="os-mobile-account">
+              <span className="os-avatar os-avatar-sm" title={email}>
+                {initial}
+              </span>
+              <form action={signOut}>
+                <button type="submit" className="os-btn os-btn-ghost os-signout-sm">
+                  Sign out
+                </button>
+              </form>
             </div>
           </div>
 
@@ -162,11 +175,11 @@ export function DashboardView({
         </aside>
 
         <main className="os-main">
-          <div className="os-topbar">
+          <div className="os-topbar os-desktop-only">
             <div className="os-userchip">
-              <span className="os-avatar">{initials}</span>
-              <div className="os-userchip-text" style={{ lineHeight: 1.2 }}>
-                <div className="os-userchip-email" style={{ fontSize: 13, fontWeight: 600 }}>{email}</div>
+              <span className="os-avatar">{initial}</span>
+              <div style={{ lineHeight: 1.2 }}>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>{email}</div>
                 <div className="os-kicker">Toolkit Member</div>
               </div>
             </div>
