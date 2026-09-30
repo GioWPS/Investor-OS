@@ -15,6 +15,8 @@
 create table if not exists public.profiles (
   id            uuid primary key references auth.users (id) on delete cascade,
   email         text not null,
+  first_name    text,          -- captured on the sign-up form (auth user metadata)
+  last_name     text,
   stage         text check (stage in ('pre-deal', '1-3-deals', 'active')),
   ghl_synced_at timestamptz,   -- set once, the first time we fire the signup webhook to GHL
   created_at    timestamptz not null default now()
@@ -22,6 +24,8 @@ create table if not exists public.profiles (
 
 -- If profiles already exists from an earlier run, make sure the column is present.
 alter table public.profiles add column if not exists ghl_synced_at timestamptz;
+alter table public.profiles add column if not exists first_name text;
+alter table public.profiles add column if not exists last_name text;
 
 -- ── tool_results ─────────────────────────────────────────────────────────────
 -- One row per tool completion. inputs/outputs are jsonb ON PURPOSE: each tool has a
@@ -99,8 +103,13 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id, email)
-  values (new.id, new.email)
+  insert into public.profiles (id, email, first_name, last_name)
+  values (
+    new.id,
+    new.email,
+    nullif(left(trim(new.raw_user_meta_data ->> 'first_name'), 80), ''),
+    nullif(left(trim(new.raw_user_meta_data ->> 'last_name'), 80), '')
+  )
   on conflict (id) do nothing;
   return new;
 end;

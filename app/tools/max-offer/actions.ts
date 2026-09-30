@@ -116,6 +116,11 @@ export async function runMaxOffer(values: MaxOfferFormValues): Promise<RunMaxOff
     }
 
     const stage = stageFromExperience(values.experience);
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("first_name, last_name")
+      .eq("id", user.id)
+      .single();
     if (stage) {
       await supabase.from("profiles").update({ stage }).eq("id", user.id);
     }
@@ -125,6 +130,7 @@ export async function runMaxOffer(values: MaxOfferFormValues): Promise<RunMaxOff
     await syncToGhl(
       toolCompletionPayload({
         email: user.email ?? "",
+        name: { firstName: profile?.first_name, lastName: profile?.last_name },
         tool: "max_offer",
         stage,
         customFields: {

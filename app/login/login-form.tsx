@@ -36,6 +36,8 @@ const COPY: Record<Mode, { title: string; subtitle: string; cta: string }> = {
 
 export function LoginForm() {
   const [mode, setMode] = useState<Mode>("signin");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "working" | "sent" | "error">("idle");
@@ -80,6 +82,9 @@ export function LoginForm() {
           // Where the "Confirm signup" email lands. Must be in Supabase Auth's Redirect
           // URLs allow-list — never a wildcard (checklist #5).
           emailRedirectTo: `${window.location.origin}/auth/callback`,
+          // Saved on the auth user; the DB trigger copies them into profiles, and they go to
+          // GHL with the signup event so the contact has a real name.
+          data: { first_name: firstName.trim(), last_name: lastName.trim() },
         },
       });
       if (error) {
@@ -152,6 +157,43 @@ export function LoginForm() {
       <p style={{ textAlign: "center", color: "var(--os-fg-2)", fontSize: 14, margin: "0 0 24px" }}>
         {copy.subtitle}
       </p>
+
+      {mode === "signup" && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+          <div>
+            <label className="os-label" htmlFor="first-name">
+              First name
+            </label>
+            <input
+              id="first-name"
+              className="os-input"
+              type="text"
+              required
+              maxLength={80}
+              autoComplete="given-name"
+              placeholder="Jane"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="os-label" htmlFor="last-name">
+              Last name
+            </label>
+            <input
+              id="last-name"
+              className="os-input"
+              type="text"
+              required
+              maxLength={80}
+              autoComplete="family-name"
+              placeholder="Doe"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+            />
+          </div>
+        </div>
+      )}
 
       <label className="os-label" htmlFor="email">
         Email

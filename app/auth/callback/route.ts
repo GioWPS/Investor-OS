@@ -40,12 +40,13 @@ export async function GET(request: Request) {
     // Only fire the signup webhook the FIRST time (ghl_synced_at is null until we do).
     const { data: profile } = await supabase
       .from("profiles")
-      .select("email, ghl_synced_at")
+      .select("email, ghl_synced_at, first_name, last_name")
       .eq("id", user.id)
       .single();
 
     if (profile && !profile.ghl_synced_at) {
-      await syncToGhl(signupPayload(profile.email ?? user.email ?? ""), {
+      const name = { firstName: profile.first_name, lastName: profile.last_name };
+      await syncToGhl(signupPayload(profile.email ?? user.email ?? "", name), {
         userId: user.id,
       });
       // Mark synced regardless of GHL success: failures are already captured in

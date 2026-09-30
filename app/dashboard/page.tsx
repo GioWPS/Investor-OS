@@ -21,7 +21,7 @@ export default async function DashboardPage() {
   const windowEnd = new Date();
   windowEnd.setDate(windowEnd.getDate() + 7);
   const [{ data: profile }, { data: results }, { count: dueFollowUps }] = await Promise.all([
-    supabase.from("profiles").select("stage").eq("id", user.id).single(),
+    supabase.from("profiles").select("stage, first_name").eq("id", user.id).single(),
     supabase
       .from("tool_results")
       .select("tool, created_at, inputs")
@@ -35,7 +35,7 @@ export default async function DashboardPage() {
   ]);
 
   const completed: Partial<Record<ToolKey, string>> = {};
-  let firstName = "";
+  let firstName = (profile?.first_name as string | null) ?? "";
   for (const row of results ?? []) {
     const key = row.tool as ToolKey;
     if (!completed[key]) completed[key] = row.created_at as string;

@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { contactFields, quoteList } from "@/lib/ghl-format";
 
 /**
  * ONE-WAY sync: app → GHL. This is the app's only connection to GHL. The app never reads
@@ -22,6 +23,8 @@ const STAGES: Stage[] = ["pre-deal", "1-3-deals", "active"];
  */
 export interface GhlSyncPayload {
   email: string;
+  firstName?: string;
+  lastName?: string;
   event: "signup" | "tool_completed";
   tags: string[];
   /** Tags to take OFF the contact — the other two stage tags, so only the latest stage stays. */
@@ -31,12 +34,25 @@ export interface GhlSyncPayload {
 }
 
 // ── Tagging taxonomy (keep IDENTICAL across all three tools so it never drifts) ──────
-export function signupPayload(email: string): GhlSyncPayload {
-  return { email, event: "signup", tags: ["toolkit:signed-up"] };
+export interface ContactName {
+  firstName?: string | null;
+  lastName?: string | null;
+}
+
+function nameFields(name?: ContactName): Pick<GhlSyncPayload, "firstName" | "lastName"> {
+  return {
+    firstName: name?.firstName?.trim() || undefined,
+    lastName: name?.lastName?.trim() || undefined,
+  };
+}
+
+export function signupPayload(email: string, name?: ContactName): GhlSyncPayload {
+  return { email, ...nameFields(name), event: "signup", tags: ["toolkit:signed-up"] };
 }
 
 export function toolCompletionPayload(args: {
   email: string;
+  name?: ContactName;
   tool: ToolKey;
   /** the result bucket, e.g. "deal-verdict-good" → tag "max-offer:deal-verdict-good" */
   segment?: string;
@@ -52,6 +68,7 @@ export function toolCompletionPayload(args: {
   if (args.stage) tags.push(`stage:${args.stage}`);
   return {
     email: args.email,
+    ...nameFields(args.name),
     event: "tool_completed",
     tags,
     removeTags: args.stage
@@ -60,11 +77,6 @@ export function toolCompletionPayload(args: {
     stage: args.stage,
     customFields: args.customFields,
   };
-}
-
-/** ["a", "b"] → "a","b" — see the tagsQuoted note in postToGhl. Empty list → "". */
-export function quoteList(tags: string[]): string {
-  return tags.map((t) => JSON.stringify(t)).join(",");
 }
 
 // ── The actual HTTP call. Throws on failure; syncToGhl() below catches + logs. ───────
@@ -94,6 +106,7 @@ async function postToGhl(payload: GhlSyncPayload): Promise<void> {
     // field REPLACES every tag already on the contact.)
     body: JSON.stringify({
       ...payload,
+      contactFields: contactFields(payload),
       tagsQuoted: quoteList(payload.tags),
       removeTagsQuoted: quoteList(payload.removeTags ?? []),
     }),
