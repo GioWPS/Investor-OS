@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { TOOLS, type ToolKey } from "@/lib/tools/registry";
+import { LIVE_MODULES } from "@/lib/modules";
 import { signOut } from "./actions";
-import { TabNamer } from "./tab-namer";
 import {
   IconBlueprint,
   IconCalculator,
@@ -71,19 +71,18 @@ export function DashboardView({
     { icon: IconReports, value: lastActivity ? new Date(lastActivity).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—", label: "Last Activity", meta: "acc-orange", metaText: `${totalRuns} total runs` },
   ];
 
-  // "Reports" is live (deal history); the rest stay locked previews of future CTOS modules.
-  const osFuture: { name: string; Icon: typeof IconReports; href?: string }[] = [
-    { name: "Lead Pipeline", Icon: IconPipeline, href: "/dashboard/pipeline" },
+  // An href makes a module clickable; no href renders it locked with a "Soon" badge.
+  const osFuture: { name: string; Icon: typeof IconReports; href?: string; sameTab?: boolean }[] = [
+    { name: "Lead Pipeline", Icon: IconPipeline, href: LIVE_MODULES.pipeline ? "/dashboard/pipeline" : undefined },
     { name: "AI Deal Coach", Icon: IconCoach },
-    { name: "Market Watch", Icon: IconMarket, href: "/dashboard/market-watch" },
+    { name: "Market Watch", Icon: IconMarket, href: LIVE_MODULES.marketWatch ? "/dashboard/market-watch" : undefined },
     { name: "Playbooks", Icon: IconPlaybook },
-    { name: "Reports", Icon: IconReports, href: "/tools/max-offer/history" },
+    { name: "Reports", Icon: IconReports, href: "/tools/max-offer/history", sameTab: true },
     { name: "Mastermind", Icon: IconMastermind },
   ];
 
   return (
     <div className="os-scope">
-      <TabNamer />
       <div className="os-shell">
         <aside className="os-side">
           <div className="os-brand">
@@ -108,8 +107,6 @@ export function DashboardView({
                   <Link
                     key={t.key}
                     href={`/tools/${t.slug}`}
-                    target="_blank"
-                    rel="opener"
                     className="os-navitem"
                   >
                     <Icon /> {t.name}
@@ -126,9 +123,15 @@ export function DashboardView({
           <div>
             <div className="os-navlabel">Closing Table OS</div>
             <nav className="os-nav">
-              {osFuture.map(({ name, Icon, href }) =>
+              {osFuture.map(({ name, Icon, href, sameTab }) =>
                 href ? (
-                  <Link key={name} href={href} target="_blank" rel="opener" className="os-navitem">
+                  <Link
+                    key={name}
+                    href={href}
+                    target={sameTab ? undefined : "_blank"}
+                    rel={sameTab ? undefined : "opener"}
+                    className="os-navitem"
+                  >
                     <Icon /> {name}
                   </Link>
                 ) : (
@@ -179,7 +182,7 @@ export function DashboardView({
           </p>
 
           <div style={{ display: "flex", gap: 12, marginTop: 22, flexWrap: "wrap" }}>
-            <Link className="os-btn os-btn-primary" href="/tools/max-offer" target="_blank" rel="opener">
+            <Link className="os-btn os-btn-primary" href="/tools/max-offer">
               Open Max Offer Calculator →
             </Link>
             <a className="os-btn os-btn-ghost" href="#tools">
@@ -187,7 +190,7 @@ export function DashboardView({
             </a>
           </div>
 
-          {dueFollowUps > 0 && (
+          {LIVE_MODULES.pipeline && dueFollowUps > 0 && (
             <Link
               href="/dashboard/pipeline"
               target="_blank"
@@ -256,13 +259,10 @@ export function DashboardView({
                     <div className="os-stat-label">{s.label}</div>
                   </>
                 );
-                // Same new-tab pattern as the tool links (rel="opener" so the tab-jump works).
                 return s.href ? (
                   <Link
                     key={s.label}
                     href={s.href}
-                    target="_blank"
-                    rel="opener"
                     className="os-panel"
                     style={{ color: "inherit", textDecoration: "none" }}
                     title="See every deal you've analyzed"
@@ -310,8 +310,6 @@ export function DashboardView({
                 <Link
                   key={t.key}
                   href={`/tools/${t.slug}`}
-                  target="_blank"
-                  rel="opener"
                   className="os-tool live"
                 >
                   {inner}
