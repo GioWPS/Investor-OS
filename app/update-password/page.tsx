@@ -27,7 +27,7 @@ export default async function UpdatePasswordPage() {
             <BrandMark />
             <div>
               <div className="os-brand-eyebrow">The Closing Table</div>
-              <div className="os-brand-name">Free Toolkit</div>
+              <div className="os-brand-name">Closing Table OS</div>
             </div>
           </div>
 
