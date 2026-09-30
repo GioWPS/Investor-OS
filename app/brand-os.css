@@ -71,7 +71,13 @@
   padding: 22px 16px;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 14px;
+  /* Stays in view while the main column scrolls, so the webinar CTA is always reachable. */
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  align-self: start;
 }
 .os-brand {
   display: flex;
@@ -118,7 +124,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border-radius: 11px;
   border: 1px solid transparent;
   color: var(--os-fg-2);
@@ -164,24 +170,51 @@
 }
 
 .os-side-promo {
-  margin-top: auto;
+  /* Grows to fill the rest of the (window-height, sticky) sidebar: no dead gap above it,
+     and the button stays pinned to the bottom edge of the screen. */
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--os-line);
-  border-radius: 16px;
-  padding: 18px;
+  border-radius: 14px;
+  padding: 14px 15px;
   background: linear-gradient(160deg, rgba(169, 105, 213, 0.16), rgba(56, 225, 214, 0.06));
 }
 .os-side-promo h4 {
   font-family: var(--os-display);
   text-transform: uppercase;
-  font-size: 20px;
-  margin: 8px 0 6px;
+  font-size: 18px;
+  margin: 6px 0 5px;
   line-height: 1;
 }
 .os-side-promo p {
   font-size: 12px;
   color: var(--os-fg-2);
-  margin: 0 0 14px;
-  line-height: 1.5;
+  margin: 0 0 11px;
+  line-height: 1.45;
+}
+.os-side-promo .os-btn {
+  margin-top: auto;
+}
+
+/* "On air" recording light next to "Live · Monthly". */
+.os-live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff3b4f;
+  box-shadow: 0 0 8px rgba(255, 59, 79, 0.75);
+  margin-right: 7px;
+  vertical-align: 1px;
+  animation: os-live-pulse 1.8s ease-in-out infinite;
+}
+@keyframes os-live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .os-live-dot { animation: none; }
 }
 
 /* ── main ── */
@@ -474,6 +507,9 @@
     align-items: center;
     border-right: none;
     border-bottom: 1px solid var(--os-line);
+    position: static;
+    height: auto;
+    overflow: visible;
   }
   .os-nav {
     flex-direction: row;

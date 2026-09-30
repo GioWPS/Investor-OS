@@ -143,7 +143,10 @@ export function DashboardView({
           </div>
 
           <div className="os-side-promo">
-            <div className="os-kicker">Live · Monthly</div>
+            <div className="os-kicker">
+              <span className="os-live-dot" aria-hidden="true" />
+              Live · Monthly
+            </div>
             <h4>Get in the room</h4>
             <p>Bring your numbers to Henry and investors closing deals right now.</p>
             <a
@@ -151,7 +154,7 @@ export function DashboardView({
               href={WEBINAR_URL}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ width: "100%", justifyContent: "center", padding: "11px 16px" }}
+              style={{ width: "100%", justifyContent: "center", padding: "9px 14px" }}
             >
               Join the Webinar
             </a>
