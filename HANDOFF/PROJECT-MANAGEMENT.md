@@ -40,7 +40,7 @@ work progresses.
    DSCR / seller financing / etc.) + unit tests, then wire the page (form → save → GHL) following the
    Max Offer pattern. Ask Gio for Henry's branching logic/questions before writing the tree.
 2. **Deploy to Vercel** — create project, set the same env vars there, add the prod URL to Supabase's
-   redirect allow-list, point a subdomain (`toolkit.roadtotheclosingtable.com`).
+   redirect allow-list, point the subdomain (`app.henrywashington.com`).
 3. **Wire GHL for real** — get the real inbound webhook URL + shared secret, set env vars, test the
    signup + tool-completion tagging end-to-end.
 4. **Email branding** — once Gio picks the domain, do the Resend SMTP setup, then paste the template.

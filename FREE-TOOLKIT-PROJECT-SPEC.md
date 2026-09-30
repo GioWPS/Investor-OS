@@ -192,7 +192,7 @@ Every tool's result page presents the other two tools as a logical next step (fr
 5. Build the dashboard shell and the GHL webhook integration **alongside tool #1**, not after all three tools exist.
 6. Once tool #1 works end-to-end locally, create a Vercel account and deploy.
 7. Wire the live GHL webhook using the existing GHL account/API access.
-8. Point a subdomain (e.g. `toolkit.roadtotheclosingtable.com`) at the deployment.
+8. Point the subdomain `app.henrywashington.com` at the deployment (decided Sep 2026; Henry's domain, no purchase needed).
 9. Build Max Offer Calculator, then First Deal Blueprint, following the same pattern.
 
 ---
