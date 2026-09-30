@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 import type { CSSProperties } from "react";
 import { TOOLS, type ToolKey } from "@/lib/tools/registry";
 import { LIVE_MODULES } from "@/lib/modules";
@@ -86,9 +87,7 @@ export function DashboardView({
       <div className="os-shell">
         <aside className="os-side">
           <div className="os-brand">
-            <span className="os-brand-mark">
-              <IconLayers style={{ width: 20, height: 20, color: "#fff" }} />
-            </span>
+            <BrandMark />
             <div>
               <div className="os-brand-eyebrow">The Closing Table</div>
               <div className="os-brand-name">Free Toolkit</div>

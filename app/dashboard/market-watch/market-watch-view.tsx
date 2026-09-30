@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { SeriesPoint } from "@/lib/market/fred";
 import { LineChart } from "./line-chart";
-import { IconLayers } from "../icons";
+import { BrandMark } from "@/components/brand-mark";
 
 export interface MetroBundle {
   cbsa: string;
@@ -111,9 +111,7 @@ export function MarketWatchView({ national, dealMetros, allMetros }: MarketWatch
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "34px 22px 60px" }}>
         <div className="os-topbar" style={{ marginBottom: 26 }}>
           <div className="os-brand">
-            <span className="os-brand-mark">
-              <IconLayers style={{ width: 20, height: 20, color: "#fff" }} />
-            </span>
+            <BrandMark />
             <div>
               <div className="os-brand-eyebrow">Closing Table OS</div>
               <div className="os-brand-name">Market Watch</div>

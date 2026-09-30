@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "./login-form";
-import { IconLayers } from "../dashboard/icons";
+import { BrandMark } from "@/components/brand-mark";
 import "../brand-os.css";
 
 /**
@@ -22,9 +22,7 @@ export default async function LoginPage() {
       <div className="os-login-wrap">
         <div className="os-login-card">
           <div className="os-brand" style={{ justifyContent: "center", marginBottom: 26 }}>
-            <span className="os-brand-mark">
-              <IconLayers style={{ width: 20, height: 20, color: "#fff" }} />
-            </span>
+            <BrandMark />
             <div>
               <div className="os-brand-eyebrow">The Closing Table</div>
               <div className="os-brand-name">Free Toolkit</div>

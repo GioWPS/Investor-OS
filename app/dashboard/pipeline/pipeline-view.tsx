@@ -4,7 +4,7 @@ import { useRef, useState, useTransition, type CSSProperties } from "react";
 import Link from "next/link";
 import { LEAD_STAGES, isActiveStage, type LeadStage } from "@/lib/pipeline";
 import { createLead, deleteLead, updateLead } from "./actions";
-import { IconLayers } from "../icons";
+import { BrandMark } from "@/components/brand-mark";
 
 export interface LeadRow {
   id: string;
@@ -84,9 +84,7 @@ export function PipelineView({ leads }: { leads: LeadRow[] }) {
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "34px 22px 60px" }}>
         <div className="os-topbar" style={{ marginBottom: 26 }}>
           <div className="os-brand">
-            <span className="os-brand-mark">
-              <IconLayers style={{ width: 20, height: 20, color: "#fff" }} />
-            </span>
+            <BrandMark />
             <div>
               <div className="os-brand-eyebrow">Closing Table OS</div>
               <div className="os-brand-name">Lead Pipeline</div>
