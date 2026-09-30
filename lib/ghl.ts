@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export type ToolKey = "max_offer" | "funding_path" | "first_deal_blueprint";
 export type Stage = "pre-deal" | "1-3-deals" | "active";
+const STAGES: Stage[] = ["pre-deal", "1-3-deals", "active"];
 
 /**
  * The payload we send to GHL. Deliberately minimal — a couple of tags + optional custom
@@ -23,6 +24,8 @@ export interface GhlSyncPayload {
   email: string;
   event: "signup" | "tool_completed";
   tags: string[];
+  /** Tags to take OFF the contact — the other two stage tags, so only the latest stage stays. */
+  removeTags?: string[];
   stage?: Stage;
   customFields?: Record<string, string | number>;
 }
@@ -44,10 +47,16 @@ export function toolCompletionPayload(args: {
   const prefix = args.tool.replace(/_/g, "-");
   const tags = [`tool:${prefix}-used`];
   if (args.segment) tags.push(`${prefix}:${args.segment}`);
+  // Stage travels as a tag; removeTags below lists the other two stage tags so the Zap can
+  // take them off, leaving exactly one stage tag per contact.
+  if (args.stage) tags.push(`stage:${args.stage}`);
   return {
     email: args.email,
     event: "tool_completed",
     tags,
+    removeTags: args.stage
+      ? STAGES.filter((s) => s !== args.stage).map((s) => `stage:${s}`)
+      : undefined,
     stage: args.stage,
     customFields: args.customFields,
   };
@@ -72,7 +81,15 @@ async function postToGhl(payload: GhlSyncPayload): Promise<void> {
       // Shared secret so GHL can verify this request genuinely came from the app.
       "X-Toolkit-Signature": secret,
     },
-    body: JSON.stringify(payload),
+    // tagsJson / removeTagsJson: the same lists pre-serialized as JSON text. The Zap drops
+    // them verbatim into GHL's add/remove-tags API calls — Zapier can't build a JSON array
+    // from a list field itself. (Tags go through those endpoints, never through GHL's
+    // contact upsert, whose tags field REPLACES every tag already on the contact.)
+    body: JSON.stringify({
+      ...payload,
+      tagsJson: JSON.stringify(payload.tags),
+      removeTagsJson: JSON.stringify(payload.removeTags ?? []),
+    }),
     // Never let a slow GHL hang a server action indefinitely.
     signal: AbortSignal.timeout(8000),
   });
