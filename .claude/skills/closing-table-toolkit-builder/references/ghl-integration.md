@@ -12,7 +12,7 @@ crossed and needs a conscious decision, not an assumption.
 
 ## What flows from the app to GHL, and when
 
-**On account creation (first magic-link signup):**
+**On account creation (when a new user clicks their confirm-email link):**
 - Upsert a GHL contact by email.
 - No tags yet beyond something like `toolkit:signed-up` — the useful tags come from tool completion.
 
@@ -53,11 +53,11 @@ announcements. The app's job ends at "tell GHL what happened."
 - No GHL membership/client portal product for "free toolkit access" — that's the whole problem this
   app exists to solve. If someone suggests it later ("just to save time"), the answer is no — it
   reopens the exact risk (shared portal shell with the paid course) this architecture was built to avoid.
-- No routing magic-link auth emails through GHL, even though it seems like it would save adding
+- No routing the auth emails (signup confirmation, password reset) through GHL, even though it seems like it would save adding
   another vendor. GHL isn't an SMTP relay — Supabase Auth needs real SMTP credentials to send the
   email it generates, and GHL doesn't expose that for arbitrary third-party sends. More importantly,
   doing this would make the login-critical path depend on GHL's workflow engine being up and fast,
   which inverts the one-way, non-critical relationship this integration is built on (app → GHL for
   marketing signals, never GHL → app for anything auth-critical). Use a dedicated transactional
   provider (Resend or Postmark) configured directly in Supabase's Auth SMTP settings instead — GHL
-  keeps every marketing/nurture email it already owns, just never the magic link itself.
+  keeps every marketing/nurture email it already owns, just never the confirm/reset emails themselves.

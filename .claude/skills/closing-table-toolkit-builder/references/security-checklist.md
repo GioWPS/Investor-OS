@@ -39,14 +39,26 @@ a logged-in non-admin user, not just checked by reading the policy definition.
   verify a shared secret or signature on that incoming request before acting on it — never trust an
   unauthenticated POST to do something like mark a user as upgraded or delete data.
 
-## 5. Magic-link auth is used as intended, not defeated by shortcuts
+## 5. Password auth is used as intended, not defeated by shortcuts
 
-- Don't build a "dev bypass" password login and forget to remove it.
-- Magic-link tokens are single-use and time-limited by Supabase default — don't build custom logic
-  that re-issues or extends them without understanding why Supabase scoped them that way.
-- Redirect URLs for the magic link callback should be an explicit allow-list in Supabase Auth
-  settings, not a wildcard — this is a common Next.js + Supabase misconfiguration that allows token
-  redirection to an attacker-controlled URL.
+- Passwords only ever go to Supabase Auth (`signUp`, `signInWithPassword`, `updateUser`). The app
+  never stores, logs, or echoes a password, and never puts one in a URL or a GHL payload.
+- Keep **"Confirm email" on** in Supabase. The confirmation click proves the person owns the inbox,
+  and it's also what fires the one-time GHL signup webhook — turning it off would push unverified
+  addresses into GHL.
+- Keep sign-in errors generic ("Email or password is incorrect") so the form can't be used to
+  discover which emails have accounts.
+- Password-reset links are single-use and time-limited by Supabase — don't build custom logic that
+  re-issues or extends them. The reset link signs the user in, and `/update-password` sets the new
+  password on that session.
+- `/update-password` accepts any signed-in session, so someone holding a live session could change
+  the password without the old one. If that matters, turn on Supabase's "Secure password change"
+  option (requires a recent login) rather than hand-rolling a check.
+- Don't build a "dev bypass" login and forget to remove it.
+- Redirect URLs for confirm/reset links must be an explicit allow-list in Supabase Auth settings:
+  exact domains only, never a wildcard domain (a `/**` path suffix on an exact domain is fine).
+  A wildcard domain is a common Next.js + Supabase misconfiguration that lets tokens be redirected
+  to an attacker-controlled URL.
 
 ## 6. Never trust client-supplied identity
 

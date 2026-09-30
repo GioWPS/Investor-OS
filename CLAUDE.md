@@ -14,7 +14,7 @@ primary builder's (Gio's) project.
    `HANDOFF/MEMORY-EXPORT/` (see that folder's README).
 
 ## How Gio likes to work (important)
-- **Gio is a CS grad but learning this stack** (Next.js, Supabase, magic-link auth, webhooks).
+- **Gio is a CS grad but learning this stack** (Next.js, Supabase Auth, webhooks).
   Explain the *why*, not just the what. Flag security basics proactively. Point at official docs
   for new primitives.
 - **Build → show on localhost → WAIT for Gio to say "commit and push."** Do not commit or push
@@ -36,13 +36,14 @@ fire the GHL webhook, and render. This is what lets logic be *lifted* into Closi
 2. RLS is ON for every table, policies scoped to `auth.uid()`. Never skip "for now."
 3. `.env.local` is gitignored; no secrets committed.
 4. GHL webhook is fire-and-forget-but-logged; a GHL outage never blocks the user.
-5. Magic-link redirect URLs are an explicit allow-list in Supabase, never a wildcard.
+5. Auth redirect URLs are an explicit allow-list in Supabase: exact domains, never a wildcard domain.
 6. Never trust client-supplied identity; derive the user from the server session.
+7. Passwords are handled only by Supabase Auth; never stored, logged, or put in a URL.
 
 ## Stack + commands
 - Next.js 15 (App Router) + TypeScript + Tailwind 3, Supabase (Postgres + Auth + RLS).
-- Auth is **email + password** (confirm-email on signup, emailed reset). Tazz's decision, Sep 2026 —
-  this supersedes the "magic-link only" line still in `FREE-TOOLKIT-PROJECT-SPEC.md` §3 and the skill.
+- Auth is **email + password** (confirm-email on signup, emailed reset). Tazz's decision, Sep 2026;
+  it replaced the original magic-link plan.
 - `npm run dev` (dev server) · `npm run build` · `npm test` (vitest) · `npx tsc --noEmit` (typecheck).
 - Config changes (`next.config.mjs`, `.env.local`, `tailwind.config.ts`) require a dev restart.
 - Dev caching is disabled via `next.config.mjs` (`Cache-Control: no-store` in dev only) so the

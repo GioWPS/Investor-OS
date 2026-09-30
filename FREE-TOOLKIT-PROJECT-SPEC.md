@@ -57,7 +57,7 @@ We considered and rejected three alternatives:
 |---|---|---|
 | Framework | Next.js (App Router) | Server components + server actions in one place; no separate backend service needed at this scale |
 | Backend/data | Supabase (Postgres + Auth + Row Level Security) | One provider for data and auth; RLS gives real per-user data isolation without hand-rolled authorization |
-| Auth | Passwordless magic-link email only | Lowest friction for a free-tool signup; no password fatigue, no password-breach risk |
+| Auth | Email + password (Supabase Auth), with email confirmation on signup and an emailed password reset | A familiar login for what is shaping up to be a membership-style product; confirming the email keeps unverified addresses out of GHL. *Changed Sep 2026 by Tazz's decision — the original plan was passwordless magic-link.* |
 | Hosting | Vercel | Native pairing with Next.js |
 | Auth email delivery | Resend or Postmark (via Supabase's SMTP settings) — **not** GHL | GHL isn't an SMTP relay, and routing login-critical email through GHL's workflow engine would make login availability depend on GHL being up and fast, which inverts the one-way relationship this integration is built on |
 
@@ -86,8 +86,9 @@ Row Level Security is enabled from day one on both tables, scoped to `auth.uid()
 **Page structure:**
 
 ```
-/login                        → magic-link request
-/auth/callback                → Supabase auth callback
+/login                        → sign in / create account / forgot password
+/auth/callback                → Supabase auth callback (confirm-email and password-reset links land here)
+/update-password               → set a new password (from the reset email)
 /dashboard                     → all tools, completion state, saved results, room for future tools
 /tools/funding-path            → build first
 /tools/max-offer
@@ -116,7 +117,7 @@ GHL owns everything downstream of that signal. The app never reads from GHL, nev
 **Explicitly out of bounds — do not revisit these without a real reason:**
 - No GHL native survey/quiz standing in for any tool's logic.
 - No GHL membership/portal product for free-toolkit access, ever — this is the exact risk the whole architecture exists to avoid.
-- No routing the magic-link auth email through GHL.
+- No routing the auth emails (signup confirmation, password reset) through GHL.
 - No letting the app's Supabase identity system merge with or read from the paid course's GHL membership data.
 
 ---
@@ -162,8 +163,9 @@ Every tool's result page presents the other two tools as a logical next step (fr
 2. Row Level Security is on from day one on every table — not added "later."
 3. `.env.local` is gitignored; no secrets ever committed, even temporarily.
 4. The GHL webhook call is fire-and-forget-but-logged — a GHL outage never blocks a user from seeing or saving their result.
-5. Magic-link redirect URLs are an explicit allow-list in Supabase, never a wildcard.
+5. Auth redirect URLs (confirm-email and password-reset links) are an explicit allow-list in Supabase: exact domains only, never a wildcard domain. A `/**` path suffix on an exact domain is fine.
 6. The app never trusts a client-supplied `userId` or email header — the acting user is always derived from the authenticated server-side session.
+7. Passwords are handled only by Supabase Auth — the app never stores, logs, or puts a password in a URL.
 
 ---
 

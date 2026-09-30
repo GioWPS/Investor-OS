@@ -49,8 +49,9 @@ dashboard just needs to know how to render each `tool` type's stored result.
 
 ```
 /                       → marketing/redirect — real marketing lives in GHL, this can just route to /login or /dashboard
-/login                  → magic-link request form
-/auth/callback          → Supabase auth callback handler
+/login                  → sign in / create account / forgot password
+/auth/callback          → Supabase auth callback handler (confirm-email + reset links)
+/update-password        → set a new password (from the reset email)
 /dashboard              → the toolkit dashboard: shows all tools, completion state, saved results, room for future tools
 /tools/max-offer            → Max Offer Calculator (accent color per branding)
 /tools/funding-path          → Funding Path Finder

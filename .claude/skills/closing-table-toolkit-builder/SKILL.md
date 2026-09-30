@@ -1,6 +1,6 @@
 ---
 name: closing-table-toolkit-builder
-description: Guide for building and reviewing the "Road to the Closing Table Free Toolkit" — Henry Washington's standalone Next.js + Supabase web app (Max Offer Calculator, Funding Path Finder, First Deal Blueprint) that doubles as Phase 0 of Closing Table OS. Use this skill whenever working on this specific codebase — scaffolding the Next.js/Supabase project, implementing magic-link auth, building or reviewing any of the three tools or the dashboard, wiring the GHL webhook integration (contact upsert + tagging), or mentoring Gio (a CS-degree developer who is learning this stack as he goes) on code structure and security basics like RLS, env vars, and webhook secret validation. Also trigger for any question about how this app should integrate with GHL, how tool logic should stay portable for a future Closing Table OS migration, or what NOT to build natively in GHL for this project. Consult this skill before making any architecture decision on this codebase so choices stay consistent across sessions, even if the user doesn't say "toolkit" or "Gio" explicitly — mentions of the Max Offer Calculator, Funding Path Finder, First Deal Blueprint, or the free toolkit dashboard should trigger it too.
+description: Guide for building and reviewing the "Road to the Closing Table Free Toolkit" — Henry Washington's standalone Next.js + Supabase web app (Max Offer Calculator, Funding Path Finder, First Deal Blueprint) that doubles as Phase 0 of Closing Table OS. Use this skill whenever working on this specific codebase — scaffolding the Next.js/Supabase project, implementing email + password auth, building or reviewing any of the three tools or the dashboard, wiring the GHL webhook integration (contact upsert + tagging), or mentoring Gio (a CS-degree developer who is learning this stack as he goes) on code structure and security basics like RLS, env vars, and webhook secret validation. Also trigger for any question about how this app should integrate with GHL, how tool logic should stay portable for a future Closing Table OS migration, or what NOT to build natively in GHL for this project. Consult this skill before making any architecture decision on this codebase so choices stay consistent across sessions, even if the user doesn't say "toolkit" or "Gio" explicitly — mentions of the Max Offer Calculator, Funding Path Finder, First Deal Blueprint, or the free toolkit dashboard should trigger it too.
 ---
 
 # Road to the Closing Table Free Toolkit — Build Guide
@@ -14,7 +14,7 @@ into the real product, or does it get thrown away?* If an approach would need to
 that's a signal to reconsider it now, even if it's faster today.
 
 The person building this, Gio, has a CS degree but is learning this specific stack (Next.js,
-Supabase, magic-link auth, webhook integrations) as he goes. A separate developer will QC the
+Supabase Auth, webhook integrations) as he goes. A separate developer will QC the
 work later. Your job when this skill is active is to be the architecture memory *and* the mentor —
 explain the why, not just the what, and flag security basics he might not know to ask about.
 
@@ -28,7 +28,7 @@ tradeoffs.
 |---|---|---|
 | Product host | Standalone web app, not GHL | GHL can't produce a real dashboard/persistence feel, and this app needs to survive as CTOS grows |
 | Stack | Next.js + Supabase (Postgres + Auth) | Small enough to move fast, real enough to scale into CTOS, one codebase Gio can grow into |
-| Auth | Passwordless magic-link email only | Lowest friction for a free-tool signup; no password fatigue |
+| Auth | Email + password (Supabase Auth): confirm email on signup, emailed password reset | Tazz's decision (Sep 2026), replacing the original magic-link plan — a familiar login for what may become a paid membership. Confirm-email keeps unverified addresses out of GHL |
 | Marketing pages | Live in GHL, link out to the app | GHL is faster to iterate on for copy/conversion; app stays focused on product |
 | Tools & order | Funding Path Finder → Max Offer Calculator → First Deal Blueprint | See `references/architecture.md` for why this order |
 | GHL relationship | One-way webhook from app → GHL on signup + tool completion | GHL owns nurture/email; app owns product data. Never let identity merge with the paid course portal |
@@ -50,7 +50,7 @@ in practice, with a before/after example.
 ## Working with Gio
 
 - **Explain the why, every time**, especially for things that aren't obvious from a CS background:
-  why magic-link over passwords, why Row Level Security matters even though "it's just a free tool,"
+  why passwords only ever touch Supabase Auth, why Row Level Security matters even though "it's just a free tool,"
   why the webhook needs a shared secret, why tool logic needs to be decoupled from pages.
 - **Don't assume he knows Next.js/Supabase idioms yet.** He knows how to code; he doesn't yet know
   this ecosystem's conventions. Point him at official docs when introducing a new primitive (e.g.
