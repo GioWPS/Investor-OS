@@ -62,6 +62,11 @@ export function toolCompletionPayload(args: {
   };
 }
 
+/** ["a", "b"] → "a","b" — see the tagsQuoted note in postToGhl. Empty list → "". */
+export function quoteList(tags: string[]): string {
+  return tags.map((t) => JSON.stringify(t)).join(",");
+}
+
 // ── The actual HTTP call. Throws on failure; syncToGhl() below catches + logs. ───────
 async function postToGhl(payload: GhlSyncPayload): Promise<void> {
   const url = process.env.GHL_WEBHOOK_URL;
@@ -81,14 +86,16 @@ async function postToGhl(payload: GhlSyncPayload): Promise<void> {
       // Shared secret so GHL can verify this request genuinely came from the app.
       "X-Toolkit-Signature": secret,
     },
-    // tagsJson / removeTagsJson: the same lists pre-serialized as JSON text. The Zap drops
-    // them verbatim into GHL's add/remove-tags API calls — Zapier can't build a JSON array
-    // from a list field itself. (Tags go through those endpoints, never through GHL's
-    // contact upsert, whose tags field REPLACES every tag already on the contact.)
+    // tagsQuoted / removeTagsQuoted: each tag JSON-quoted and comma-joined, WITHOUT the
+    // brackets (e.g. "a","b"). The Zap wraps them as {"tags": [ ... ]} for GHL's add/remove
+    // tags API. Brackets are left off on purpose: Zapier auto-parses any field that is valid
+    // JSON into a list and then flattens it to a,b — this form isn't valid JSON, so it
+    // passes through untouched. (Tags never go through GHL's contact upsert, whose tags
+    // field REPLACES every tag already on the contact.)
     body: JSON.stringify({
       ...payload,
-      tagsJson: JSON.stringify(payload.tags),
-      removeTagsJson: JSON.stringify(payload.removeTags ?? []),
+      tagsQuoted: quoteList(payload.tags),
+      removeTagsQuoted: quoteList(payload.removeTags ?? []),
     }),
     // Never let a slow GHL hang a server action indefinitely.
     signal: AbortSignal.timeout(8000),
