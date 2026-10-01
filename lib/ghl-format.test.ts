@@ -38,4 +38,18 @@ describe("contactFields", () => {
       source: "t",
     });
   });
+
+  it("writes custom fields (e.g. the confirm link) into valid JSON", () => {
+    const link = "https://x.supabase.co/auth/v1/verify?token=pkce_abc&type=signup&redirect_to=https%3A%2F%2Fapp";
+    const body = `{"email": "x@y.com"${contactFields({ firstName: "Jane", customFields: { closing_table_os_action_link: link } })}}`;
+    const parsed = JSON.parse(body);
+    expect(parsed.firstName).toBe("Jane");
+    expect(parsed.customFields).toHaveLength(1);
+    expect(parsed.customFields[0].key).toBe("closing_table_os_action_link");
+    expect(Object.values(parsed.customFields[0])).toContain(link);
+  });
+
+  it("omits customFields when there are none", () => {
+    expect(contactFields({ customFields: {} })).toBe("");
+  });
 });

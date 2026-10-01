@@ -25,12 +25,14 @@ export interface GhlSyncPayload {
   email: string;
   firstName?: string;
   lastName?: string;
-  event: "signup" | "tool_completed";
+  event: "signup" | "tool_completed" | "auth_email";
   tags: string[];
   /** Tags to take OFF the contact — the other two stage tags, so only the latest stage stays. */
   removeTags?: string[];
   stage?: Stage;
   customFields?: Record<string, string | number>;
+  /** Values written onto the GHL contact itself (e.g. the confirm/reset link). */
+  contactCustomFields?: Record<string, string>;
 }
 
 // ── Tagging taxonomy (keep IDENTICAL across all three tools so it never drifts) ──────
@@ -47,7 +49,7 @@ function nameFields(name?: ContactName): Pick<GhlSyncPayload, "firstName" | "las
 }
 
 export function signupPayload(email: string, name?: ContactName): GhlSyncPayload {
-  return { email, ...nameFields(name), event: "signup", tags: ["toolkit:signed-up"] };
+  return { email, ...nameFields(name), event: "signup", tags: ["closing-table-os:signed-up"] };
 }
 
 export function toolCompletionPayload(args: {
@@ -79,13 +81,50 @@ export function toolCompletionPayload(args: {
   };
 }
 
+// ── Login-critical emails (confirm signup / reset password) — sent BY GoHighLevel ──
+// Tazz's decision (Sep 30, 2026): GHL sends these. Supabase's Send Email hook hands each
+// email to /api/auth/send-email, which calls sendAuthEmailViaGhl(). The Zap writes the link
+// onto the contact (custom field below) and adds the tag; a GHL workflow triggered by that
+// tag sends the email using {{contact.contact_closing_table_os_action_link}}, then removes the tag so the
+// next request can fire it again.
+export const AUTH_EMAIL_LINK_FIELD = "contact_closing_table_os_action_link";
+export const AUTH_EMAIL_TAGS = {
+  signup: "closing-table-os:confirm-email",
+  recovery: "closing-table-os:reset-password",
+} as const;
+export type AuthEmailKind = keyof typeof AUTH_EMAIL_TAGS;
+
+/**
+ * Unlike syncToGhl this is NOT fire-and-forget: it throws if the message doesn't reach the
+ * Zap, so the Supabase hook reports a failure and the person sees an error they can retry,
+ * instead of silently never getting their email.
+ */
+export async function sendAuthEmailViaGhl(args: {
+  email: string;
+  name?: ContactName;
+  kind: AuthEmailKind;
+  link: string;
+}): Promise<void> {
+  await postToGhl(
+    {
+      email: args.email,
+      ...nameFields(args.name),
+      event: "auth_email",
+      tags: [AUTH_EMAIL_TAGS[args.kind]],
+      contactCustomFields: { [AUTH_EMAIL_LINK_FIELD]: args.link },
+    },
+    { required: true },
+  );
+}
+
 // ── The actual HTTP call. Throws on failure; syncToGhl() below catches + logs. ───────
-async function postToGhl(payload: GhlSyncPayload): Promise<void> {
+async function postToGhl(payload: GhlSyncPayload, opts: { required?: boolean } = {}): Promise<void> {
   const url = process.env.GHL_WEBHOOK_URL;
   const secret = process.env.GHL_WEBHOOK_SECRET;
 
   if (!url || !secret || !/^https?:\/\//i.test(url)) {
     // Not wired yet (e.g. local dev before GHL creds exist, or a placeholder value).
+    if (opts.required) throw new Error("GHL webhook not configured — cannot send email");
     // Don't fail the user flow — just note in server logs that the sync was skipped.
     console.warn(`[ghl] webhook not configured — skipping "${payload.event}" sync`);
     return;
@@ -106,7 +145,7 @@ async function postToGhl(payload: GhlSyncPayload): Promise<void> {
     // field REPLACES every tag already on the contact.)
     body: JSON.stringify({
       ...payload,
-      contactFields: contactFields(payload),
+      contactFields: contactFields({ ...payload, customFields: payload.contactCustomFields }),
       tagsQuoted: quoteList(payload.tags),
       removeTagsQuoted: quoteList(payload.removeTags ?? []),
     }),
