@@ -14,7 +14,7 @@ crossed and needs a conscious decision, not an assumption.
 
 **On account creation (when a new user clicks their confirm-email link):**
 - Upsert a GHL contact by email.
-- No tags yet beyond something like `toolkit:signed-up` — the useful tags come from tool completion.
+- No tags yet beyond something like `closing-table-os:signed-up` — the useful tags come from tool completion.
 
 **On each tool completion:**
 - Upsert the GHL contact (in case they signed up outside the normal flow, or the contact doesn't

@@ -109,7 +109,7 @@ GHL is not being replaced — it's being scoped down to what it's actually good 
 - All nurture sequences, announcements, and promotion of the monthly webinar, events, and The Closing Table Mastermind.
 
 **The app's only connection to GHL:** a one-way webhook, app → GHL, fired at two moments:
-- **On account creation:** upsert a GHL contact, tag `toolkit:signed-up`.
+- **On account creation:** upsert a GHL contact, tag `closing-table-os:signed-up`.
 - **On each tool completion:** upsert the contact, apply a usage tag (`tool:funding-path-used`, etc.), a result-segment tag (`funding-path:hard-money`, `max-offer:deal-verdict-good`, etc.), and a stage tag (`stage:pre-deal`, `stage:1-3-deals`, `stage:active` — updated in place, not accumulated).
 
 GHL owns everything downstream of that signal. The app never reads from GHL, never checks paid-membership status, and never depends on GHL being available for anything the user is actively waiting on.
