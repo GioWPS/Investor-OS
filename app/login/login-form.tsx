@@ -34,8 +34,8 @@ const COPY: Record<Mode, { title: string; subtitle: string; cta: string }> = {
   },
 };
 
-export function LoginForm() {
-  const [mode, setMode] = useState<Mode>("signin");
+export function LoginForm({ initialMode = "signin" }: { initialMode?: "signin" | "signup" }) {
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");

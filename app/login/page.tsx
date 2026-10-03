@@ -9,13 +9,22 @@ import "../brand-os.css";
  * email + password form (sign in / create account / forgot password) in the Closing
  * Table OS command-center brand style.
  */
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ mode?: string | string[] }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (user) redirect("/dashboard");
+
+  // ?mode=signup opens straight on "Create account" (marketing pages link here). Anything
+  // else falls back to the normal sign-in form.
+  const { mode } = await searchParams;
+  const initialMode = mode === "signup" ? "signup" : "signin";
 
   return (
     <div className="os-scope">
@@ -29,7 +38,7 @@ export default async function LoginPage() {
           </div>
 
           <div className="os-panel" style={{ padding: "30px 30px 32px" }}>
-            <LoginForm />
+            <LoginForm initialMode={initialMode} />
           </div>
 
           <p style={{ textAlign: "center", color: "var(--os-fg-3)", fontSize: 12, marginTop: 18 }}>
