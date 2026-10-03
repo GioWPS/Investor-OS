@@ -221,6 +221,15 @@
 .os-main {
   padding: 28px 36px 60px;
   max-width: 1180px;
+  min-width: 0;
+}
+/* Tool pages (calculator, Reports) inside the shell: no dashboard padding, and the tool's
+   own base font/color (from moc.css) so its design renders exactly as on its own page. */
+.os-main.os-main--tool {
+  padding: 0;
+  max-width: none;
+  font-family: var(--body);
+  color: var(--fg);
 }
 .os-topbar {
   display: flex;
@@ -635,6 +644,14 @@
   }
   .os-hero-grid {
     grid-template-columns: 1fr;
+  }
+  .os-main.os-main--tool {
+    padding: 0;
+  }
+  /* The calculator's results pin their summary to the top on phones; keep it below the
+     pinned OS header instead of sliding underneath it. */
+  .os-main--tool .sticky-zone {
+    top: 152px;
   }
   .os-main {
     padding: 20px 16px 50px;
