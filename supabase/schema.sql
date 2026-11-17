@@ -152,3 +152,27 @@ create policy "leads: delete own" on public.leads
 
 create index if not exists leads_user_stage_idx on public.leads (user_id, stage);
 create index if not exists leads_user_follow_up_idx on public.leads (user_id, next_follow_up);
+
+-- ── Calculator signup from the GHL page (see supabase/calculator-signup.sql) ──
+create table if not exists public.pending_runs (
+  id             uuid primary key default gen_random_uuid(),
+  user_id        uuid not null references auth.users (id) on delete cascade,
+  tool           text not null,
+  inputs         jsonb not null,
+  outputs        jsonb not null,
+  result_segment text,
+  created_at     timestamptz not null default now(),
+  claimed_at     timestamptz
+);
+alter table public.pending_runs enable row level security;
+create index if not exists pending_runs_user_unclaimed_idx
+  on public.pending_runs (user_id) where claimed_at is null;
+
+create table if not exists public.rate_limit_events (
+  id         bigserial primary key,
+  key        text not null,
+  created_at timestamptz not null default now()
+);
+alter table public.rate_limit_events enable row level security;
+create index if not exists rate_limit_events_key_time_idx
+  on public.rate_limit_events (key, created_at);

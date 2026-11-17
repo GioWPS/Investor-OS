@@ -1,70 +1,13 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { syncToGhl, toolCompletionPayload, type Stage } from "@/lib/ghl";
-import {
-  analyzeDeal,
-  type DealCategory,
-  type MaxOfferInputs,
-} from "@/lib/tools/max-offer";
+import { syncToGhl, toolCompletionPayload } from "@/lib/ghl";
+import { buildMaxOfferRun, calculatorAnswerTags, type MaxOfferFormValues } from "@/lib/tools/max-offer-run";
 
-/**
- * Raw values coming off the form. Percentages arrive as whole numbers (6 = 6%); we convert
- * to fractions before calling the pure module. Identity (email) is NOT taken from here — it
- * comes from the authenticated session server-side (security checklist #6).
- */
-export interface MaxOfferFormValues {
-  arv: number;
-  price: number;
-  renovationBudget: number;
-  desiredProfit: number;
-  useRuleOfThumb: boolean;
-  holdMonths: number;
-  commissionPct: number; // 6  => 0.06
-  saleClosingPct: number; // 2  => 0.02
-  purchaseClosingPct: number; // 2  => 0.02
-  holdingInterestRate: number; // 12 => 0.12
-  loanPoints: number | null; // points, null => 0
-  originationFee: number | null; // $, null => 0
-  firstName: string;
-  address: string;
-  fundingType: string;
-  cashAvailable: number;
-  experience: string;
-}
+// Identity (email) is NOT taken from the form — it comes from the authenticated session
+// server-side (security checklist #6). Validation + the math live in the shared pure module.
 
 export type RunMaxOfferResult = { ok: true } | { ok: false; error: string };
-
-function num(value: unknown, label: string, { allowNull = false } = {}): number {
-  if (value === null && allowNull) return 0;
-  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
-    throw new Error(`${label} must be a non-negative number.`);
-  }
-  return value;
-}
-
-function stageFromExperience(experience: string): Stage | undefined {
-  switch (experience) {
-    case "First-Time Investor":
-      return "pre-deal";
-    case "1–3 Deals Completed":
-      return "1-3-deals";
-    case "4–10 Deals Completed":
-    case "10+ Deals Completed":
-      return "active";
-    default:
-      return undefined;
-  }
-}
-
-/** Verdict category → GHL/DB result-segment slug (matches the toolkit tagging taxonomy). */
-function verdictSegment(category: DealCategory): string {
-  return category === "positive"
-    ? "deal-verdict-good"
-    : category === "caution"
-      ? "deal-verdict-tight"
-      : "deal-verdict-pass";
-}
 
 /**
  * Saves the deal + fires GHL. The RESULT the user sees (and the live "adjust" panel) is
@@ -79,43 +22,15 @@ export async function runMaxOffer(values: MaxOfferFormValues): Promise<RunMaxOff
     } = await supabase.auth.getUser();
     if (!user) return { ok: false, error: "Your session expired. Please sign in again." };
 
-    const inputs: MaxOfferInputs = {
-      arv: num(values.arv, "ARV"),
-      renovationBudget: num(values.renovationBudget, "Renovation budget"),
-      desiredProfit: num(values.desiredProfit, "Desired profit"),
-      holdMonths: num(values.holdMonths, "Hold time"),
-      commissionPct: num(values.commissionPct, "Commission") / 100,
-      saleClosingPct: num(values.saleClosingPct, "Sale closing cost") / 100,
-      purchaseClosingPct: num(values.purchaseClosingPct, "Purchase closing cost") / 100,
-      holdingInterestRate: num(values.holdingInterestRate, "Holding interest rate") / 100,
-      loanPoints: num(values.loanPoints, "Loan points", { allowNull: true }),
-      originationFee: num(values.originationFee, "Origination fee", { allowNull: true }),
-    };
-    const price = num(values.price, "Purchase price");
-
-    // Pure logic module — MAO + verdict + score. No math lives here.
-    const analysis = analyzeDeal(inputs, price);
-
-    const segmentation = {
-      firstName: values.firstName,
-      address: values.address,
-      fundingType: values.fundingType,
-      cashAvailable: values.cashAvailable,
-      experience: values.experience,
-    };
-    const { error: insertError } = await supabase.from("tool_results").insert({
-      user_id: user.id,
-      tool: "max_offer",
-      inputs: { ...inputs, price, useRuleOfThumb: values.useRuleOfThumb, segmentation },
-      outputs: analysis as unknown as Record<string, unknown>,
-      // We now have verdict logic, so store the segment. (GHL segment TAG still gated below.)
-      result_segment: verdictSegment(analysis.category),
-    });
+    // Pure logic module — validation, MAO, verdict, score. No math lives here.
+    const { analysis, stage, row } = buildMaxOfferRun(values);
+    const { error: insertError } = await supabase
+      .from("tool_results")
+      .insert({ user_id: user.id, ...row });
     if (insertError) {
       return { ok: false, error: "Could not save your result. Please try again." };
     }
 
-    const stage = stageFromExperience(values.experience);
     const { data: profile } = await supabase
       .from("profiles")
       .select("first_name, last_name")
@@ -133,6 +48,7 @@ export async function runMaxOffer(values: MaxOfferFormValues): Promise<RunMaxOff
         name: { firstName: profile?.first_name, lastName: profile?.last_name },
         tool: "max_offer",
         stage,
+        answers: calculatorAnswerTags(values),
         customFields: {
           max_offer: Math.round(analysis.maxOffer),
           offer_gap: Math.round(analysis.gap),

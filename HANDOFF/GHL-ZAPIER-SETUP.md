@@ -1,7 +1,7 @@
 # GoHighLevel + Zapier setup — Closing Table OS
 
 How the app talks to GoHighLevel (GHL), what's built where, and how to rebuild or change it.
-Last updated Sep 30, 2026.
+Last updated Nov 17, 2026.
 
 ---
 
@@ -31,6 +31,11 @@ The app sends one message per event to the Zap. Events:
 | `auth_email` | Sign-up confirmation or password reset requested | `closing-table-os:confirm-email` or `closing-table-os:reset-password` (+ writes the link to a custom field) |
 
 Stage tags: `stage:pre-deal`, `stage:1-3-deals`, `stage:active` — exactly one per contact.
+Calculator answer tags (approved Nov 17, 2026), one per group, swapped when the answer changes:
+`cal-fund:` cash / conventional / hard-money / private / seller · `cal-cash:` under-10k / 10-25k /
+25-50k / 50-100k / 100k-plus · `cal-exp:` new / 1-3 / 4-10 / 10-plus.
+Login link for existing accounts using the website calculator: `closing-table-os:login-link`
+(GHL workflow C — see `CALCULATOR-SIGNUP-ENDPOINT.md`). Full tag list: `SOPs/SOP-Closing-Table-OS-Tags.html`.
 On hold until Henry approves scoring: `max-offer:deal-verdict-good` / `-tight` / `-pass`.
 
 ---

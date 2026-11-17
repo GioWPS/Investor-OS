@@ -26,7 +26,12 @@ export async function OsLayout({
   const name = (profile?.first_name as string | null) || user.email || "?";
 
   return (
-    <OsShell email={user.email ?? ""} initial={name.slice(0, 1).toUpperCase()} variant={variant}>
+    <OsShell
+      email={user.email ?? ""}
+      initial={name.slice(0, 1).toUpperCase()}
+      variant={variant}
+      needsPassword={user.user_metadata?.needs_password === true}
+    >
       {children}
     </OsShell>
   );

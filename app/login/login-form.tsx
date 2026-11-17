@@ -34,7 +34,13 @@ const COPY: Record<Mode, { title: string; subtitle: string; cta: string }> = {
   },
 };
 
-export function LoginForm({ initialMode = "signin" }: { initialMode?: "signin" | "signup" }) {
+export function LoginForm({
+  initialMode = "signin",
+  notice,
+}: {
+  initialMode?: "signin" | "signup" | "forgot";
+  notice?: string;
+}) {
   const [mode, setMode] = useState<Mode>(initialMode);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -193,6 +199,10 @@ export function LoginForm({ initialMode = "signin" }: { initialMode?: "signin" |
             />
           </div>
         </div>
+      )}
+
+      {notice && (
+        <p style={{ color: "var(--os-orange)", fontSize: 13, margin: "0 0 14px", lineHeight: 1.5 }}>{notice}</p>
       )}
 
       <label className="os-label" htmlFor="email">

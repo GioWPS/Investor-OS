@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { claimPendingRunsSafely } from "@/lib/claim-pending-runs";
 import { type ToolKey } from "@/lib/tools/registry";
 import { DashboardView } from "./dashboard-view";
 import "../brand-os.css";
@@ -16,6 +17,9 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // Deals they saved from Henry's website show up here even after a normal login.
+  await claimPendingRunsSafely(user.id, user.email ?? "");
 
   // Nudge window: follow-ups due within a week count as needing attention (Gio's call).
   const windowEnd = new Date();

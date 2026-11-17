@@ -534,6 +534,57 @@
   filter: brightness(1.15);
 }
 
+/* "Set a password" prompt (accounts created from the GHL calculator page) */
+.os-pw-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-bottom: 22px;
+  padding: 12px 16px;
+  border: 1px solid rgba(198, 255, 61, 0.35);
+  border-radius: 14px;
+  background: rgba(198, 255, 61, 0.07);
+  font-family: var(--os-body);
+  color: var(--os-fg);
+}
+.os-main--tool .os-pw-banner {
+  margin: 16px 24px 0;
+}
+.os-pw-banner-text {
+  font-size: 14px;
+  color: var(--os-fg-2);
+  flex: 1 1 220px;
+}
+.os-pw-banner-text b {
+  color: var(--os-fg);
+}
+.os-pw-banner-row {
+  display: flex;
+  gap: 8px;
+  flex: 1 1 280px;
+}
+.os-pw-banner-row .os-input {
+  padding: 9px 12px;
+  font-size: 14px;
+  min-width: 0;
+}
+.os-pw-banner-row .os-btn {
+  padding: 9px 16px;
+  white-space: nowrap;
+}
+.os-pw-banner-error {
+  width: 100%;
+  margin: 0;
+  font-size: 13px;
+  color: #ff7a93;
+}
+@media (max-width: 900px) {
+  .os-main--tool .os-pw-banner {
+    margin: 12px 14px 0;
+  }
+}
+
 /* responsive — phones and small tablets: the sidebar becomes a pinned header */
 @media (max-width: 900px) {
   .os-shell {

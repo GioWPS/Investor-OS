@@ -12,7 +12,7 @@ import "../brand-os.css";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ mode?: string | string[] }>;
+  searchParams: Promise<{ mode?: string | string[]; error?: string | string[] }>;
 }) {
   const supabase = await createClient();
   const {
@@ -21,10 +21,15 @@ export default async function LoginPage({
 
   if (user) redirect("/dashboard");
 
-  // ?mode=signup opens straight on "Create account" (marketing pages link here). Anything
-  // else falls back to the normal sign-in form.
-  const { mode } = await searchParams;
-  const initialMode = mode === "signup" ? "signup" : "signin";
+  // ?mode=signup opens on "Create account" (marketing pages link here); ?mode=forgot opens on
+  // "Reset password" (GHL's welcome email uses it as a never-expiring "Set your password"
+  // link). Anything else shows sign-in.
+  const { mode, error } = await searchParams;
+  const initialMode = mode === "signup" || mode === "forgot" ? mode : "signin";
+  const notice =
+    error === "link_expired" || error === "invalid_link"
+      ? "That sign-in link has expired or was already used. Sign in below, or use “Forgot password?” to get a new link."
+      : undefined;
 
   return (
     <div className="os-scope">
@@ -38,7 +43,7 @@ export default async function LoginPage({
           </div>
 
           <div className="os-panel" style={{ padding: "30px 30px 32px" }}>
-            <LoginForm initialMode={initialMode} />
+            <LoginForm initialMode={initialMode} notice={notice} />
           </div>
 
           <p style={{ textAlign: "center", color: "var(--os-fg-3)", fontSize: 12, marginTop: 18 }}>

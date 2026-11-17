@@ -30,8 +30,10 @@ const fmt = (n: number) =>
 const dateLong = (iso: string) =>
   new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
-export function HistoryView({ deals }: { deals: SavedDeal[] }) {
-  const [selected, setSelected] = useState<SavedDeal | null>(null);
+export function HistoryView({ deals, initialReportId }: { deals: SavedDeal[]; initialReportId?: string }) {
+  const [selected, setSelected] = useState<SavedDeal | null>(
+    () => deals.find((d) => d.id === initialReportId) ?? null,
+  );
 
   if (selected) {
     return (

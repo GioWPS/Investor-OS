@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOP · Closing Table OS Tags</title>
+<style>
+  :root { --ink:#1b1426; --soft:#5d5470; --line:#e6e1ee; --card:#ffffff; --bg:#f6f4f9; --purple:#6b3fa0; --purple-bg:#f1eaf9; --lime:#4f7a00; --lime-bg:#eef7d9; --warn:#9a4a00; --warn-bg:#fff1e3; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; padding:32px 16px 80px; }
+  .wrap { max-width:860px; margin:0 auto; }
+  .eyebrow { font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--purple); font-weight:700; }
+  h1 { font-size:30px; line-height:1.15; margin:6px 0 18px; }
+  h2 { font-size:19px; margin:0 0 10px; }
+  table { width:100%; border-collapse:collapse; font-size:15px; }
+  td, th { text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--soft); font-weight:600; font-size:13px; }
+  .header { background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .header td:first-child { width:150px; font-weight:700; color:var(--soft); }
+  .goal { font-size:17px; margin:18px 0 26px; }
+  .step { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px; margin:0 0 16px; }
+  .num { display:inline-flex; width:30px; height:30px; border-radius:9px; background:var(--purple); color:#fff; font-weight:700; align-items:center; justify-content:center; margin-right:10px; }
+  .step h2 { display:flex; align-items:center; }
+  .path { font-family:ui-monospace, Menlo, monospace; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:14px; display:block; margin:8px 0; }
+  code, .tag { font-family:ui-monospace, Menlo, monospace; font-size:13.5px; background:var(--purple-bg); color:var(--purple); padding:2px 7px; border-radius:6px; white-space:nowrap; }
+  .call { border-radius:10px; padding:10px 14px; margin:12px 0 0; font-size:15px; }
+  .once { background:var(--lime-bg); color:var(--lime); }
+  .reuse { background:var(--purple-bg); color:var(--purple); }
+  .warn { background:var(--warn-bg); color:var(--warn); }
+  .call b { color:inherit; }
+  ul, ol { margin:6px 0 0; padding-left:22px; }
+  li { margin:4px 0; }
+  .status { display:inline-block; font-size:12px; font-weight:700; background:var(--warn-bg); color:var(--warn); border-radius:6px; padding:2px 8px; margin-left:8px; vertical-align:middle; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Henry Washington · Tech &amp; Setup SOP</div>
+  <h1>Closing Table OS tags in GoHighLevel <span class="status" style="background:var(--lime-bg);color:var(--lime)">Live</span></h1>
+
+  <table class="header">
+    <tr><td>Use for</td><td>Building any GHL automation, list, or report off people who use the Closing Table OS or the Max Offer Calculator.</td></tr>
+    <tr><td>Owner</td><td>Tazz (tags in GHL) · Gio (anything the app sends)</td></tr>
+    <tr><td>Platform</td><td>GoHighLevel, Zapier, Closing Table OS (app.henrywashington.com)</td></tr>
+    <tr><td>Time</td><td>5 min to read · 10 min per new automation</td></tr>
+    <tr><td>Last updated</td><td>Nov 17, 2026</td></tr>
+  </table>
+
+  <p class="goal">This SOP lists every tag the Closing Table OS puts on a contact, what each one means, and exactly how to build automations on them.</p>
+
+  <!-- 1 -->
+  <div class="step">
+    <h2><span class="num">1</span>Know the tag families</h2>
+    <p>Every tag starts with where it came from. The app adds and removes them for you. You never add these by hand.</p>
+    <table>
+      <tr><th>Tag</th><th>Means</th><th>When it's added</th></tr>
+      <tr><td><span class="tag">closing-table-os:signed-up</span></td><td>Has an OS account</td><td>Once, when they confirm their email or sign up from the website calculator</td></tr>
+      <tr><td><span class="tag">tool:max-offer-used</span></td><td>Ran a deal</td><td>Every calculator run</td></tr>
+      <tr><td><span class="tag">stage:pre-deal</span> <span class="tag">stage:1-3-deals</span> <span class="tag">stage:active</span></td><td>Investor level</td><td>Every calculator run. Only one at a time.</td></tr>
+      <tr><td><span class="tag">cal-fund:cash</span> <span class="tag">cal-fund:conventional</span> <span class="tag">cal-fund:hard-money</span> <span class="tag">cal-fund:private</span> <span class="tag">cal-fund:seller</span></td><td>Calculator answer: funding type</td><td>Every calculator run. Only one at a time.</td></tr>
+      <tr><td><span class="tag">cal-cash:under-10k</span> <span class="tag">cal-cash:10-25k</span> <span class="tag">cal-cash:25-50k</span> <span class="tag">cal-cash:50-100k</span> <span class="tag">cal-cash:100k-plus</span></td><td>Calculator answer: cash available</td><td>Every calculator run. Only one at a time.</td></tr>
+      <tr><td><span class="tag">cal-exp:new</span> <span class="tag">cal-exp:1-3</span> <span class="tag">cal-exp:4-10</span> <span class="tag">cal-exp:10-plus</span></td><td>Calculator answer: experience</td><td>Every calculator run. Only one at a time.</td></tr>
+      <tr><td><span class="tag">closing-table-os:confirm-email</span> <span class="tag">closing-table-os:reset-password</span> <span class="tag">closing-table-os:login-link</span></td><td>Email triggers only</td><td>Added, then removed seconds later by workflows A, B and C (step 5)</td></tr>
+    </table>
+    <div class="call warn"><b>⚠️ Don't build automations on the three email-trigger tags.</b> They only live for a few seconds and belong to the email workflows in step 5.</div>
+    <div class="call reuse"><b>Coming later:</b> <span class="tag">max-offer:deal-verdict-good</span> / <span class="tag">-tight</span> / <span class="tag">-pass</span> are saved in the app but not sent yet. They switch on when Henry approves the deal scoring.</div>
+  </div>
+
+  <!-- 2 -->
+  <div class="step">
+    <h2><span class="num">2</span>Know where the tags come from</h2>
+    <p>The OS sends each signup and deal to one Zap, and the Zap tags the contact in GHL.</p>
+    <span class="path">Zapier → Zaps → 01 - OS → Closing Table OS → GoHighLevel (contacts + tags)</span>
+    <p>"One at a time" tags (stage, cal-fund, cal-cash, cal-exp) swap automatically. If someone answers differently next time, the old tag comes off and the new one goes on.</p>
+    <div class="call warn"><b>⚠️ Never add tags with Zapier's GoHighLevel app ("LeadConnector" → Add/Update Contact).</b> Its Tags box replaces every tag the contact already has, including paid course tags. The OS Zap uses a safe method. Copy it if you ever need another tag Zap.</div>
+  </div>
+
+  <!-- 3 -->
+  <div class="step">
+    <h2><span class="num">3</span>Build an automation on a tag</h2>
+    <ol>
+      <li><span class="path">Automation → Workflows → + Create Workflow → Start from Scratch</span></li>
+      <li>Click the name at the top and rename it, e.g. <code>Closing Table OS – Hard Money Nurture</code>.</li>
+      <li><span class="path">Add New Trigger → Contact Tag → Add filters → Tag Added → pick the tag</span></li>
+      <li>Add your actions (Send Email, Add to Workflow, Wait until a specific date/time).</li>
+      <li>Top right: switch <b>Draft → Publish</b> → Save.</li>
+    </ol>
+    <div class="call warn"><b>⚠️ Workflows only catch tags added after you publish.</b> Publish before you announce or promote anything, or early people never enter it.</div>
+    <div class="call reuse"><b>♻️ Next automation:</b> duplicate a working workflow and swap only the trigger tag + the email.</div>
+  </div>
+
+  <!-- 4 -->
+  <div class="step">
+    <h2><span class="num">4</span>Pull a list of people by tag</h2>
+    <span class="path">Contacts → Smart Lists → + Add filter → Tags → Is → pick the tag → Save as Smart List</span>
+    <p>Examples:</p>
+    <ul>
+      <li>All OS users: <span class="tag">closing-table-os:signed-up</span></li>
+      <li>Hard money buyers with real cash: <span class="tag">cal-fund:hard-money</span> + <span class="tag">cal-cash:50-100k</span></li>
+      <li>First-timers who ran a deal: <span class="tag">cal-exp:new</span> + <span class="tag">tool:max-offer-used</span></li>
+    </ul>
+  </div>
+
+  <!-- 5 -->
+  <div class="step">
+    <h2><span class="num">5</span>The three email workflows</h2>
+    <p>A and B are live. <b>C still needs to be built</b>, with the exact email in <code>HANDOFF/CALCULATOR-SIGNUP-ENDPOINT.md</code>. Publish C before the website calculator goes live.</p>
+    <table>
+      <tr><th>Workflow</th><th>Trigger tag</th><th>Sends</th></tr>
+      <tr><td>A · Closing Table OS – Confirm Email</td><td><span class="tag">closing-table-os:confirm-email</span></td><td>Confirm-your-email link</td></tr>
+      <tr><td>B · Closing Table OS – Reset Password</td><td><span class="tag">closing-table-os:reset-password</span></td><td>Reset-password link</td></tr>
+      <tr><td>C · Closing Table OS – Login Link</td><td><span class="tag">closing-table-os:login-link</span></td><td>"Your deal is saved" sign-in link for people who already have an account</td></tr>
+    </table>
+    <p>Each one: Send Email (button link = <code>{{contact.contact_closing_table_os_action_link}}</code>) → Remove the same tag → <b>Allow Re-entry ON</b>.</p>
+    <div class="call once"><b>Build once.</b> Never delete or rename these three, or people stop getting their sign-in emails.</div>
+  </div>
+
+  <!-- 6 -->
+  <div class="step">
+    <h2><span class="num">6</span>Adding a new tag later</h2>
+    <p>New tags come from the app, so ask Gio (or Claude). Naming rules:</p>
+    <ul>
+      <li>Start with where it comes from: <code>cal-</code> calculator answers, <code>tool:</code> tool used, <code>stage:</code> investor level, <code>closing-table-os:</code> account events.</li>
+      <li>All lowercase, dashes between words, one colon between the group and the value.</li>
+      <li>Keep it short: <code>cal-fund:hard-money</code>, not <code>calculator-funding-type:hard-money-lender</code>.</li>
+    </ul>
+    <div class="call reuse"><b>♻️ Next tool</b> (Funding Path Finder, First Deal Blueprint): the delta is one new <code>tool:&lt;name&gt;-used</code> tag plus that tool's answer tags with their own short prefix. Everything else stays the same.</div>
+  </div>
+
+  <!-- 7 -->
+  <div class="step">
+    <h2><span class="num">7</span>Test it (do this after any change)</h2>
+    <ol>
+      <li>Go to <code>app.henrywashington.com</code>, sign in with your own email, and run one deal in the Max Offer Calculator.</li>
+      <li><span class="path">Zapier → Zap History</span> → newest run of the OS Zap shows <b>Successful</b> (or <b>Filtered</b>, which is also fine).</li>
+      <li><span class="path">GoHighLevel → Contacts → search your email → Tags</span></li>
+      <li>Check you see <span class="tag">tool:max-offer-used</span>, one <span class="tag">stage:</span> tag, and one each of <span class="tag">cal-fund:</span>, <span class="tag">cal-cash:</span>, <span class="tag">cal-exp:</span>.</li>
+      <li>Check your <b>old tags are still there</b>. If any old tag disappeared, stop and tell Gio right away.</li>
+    </ol>
+  </div>
+</div>
+</body>
+</html>

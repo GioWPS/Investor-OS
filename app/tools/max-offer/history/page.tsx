@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { claimPendingRunsSafely } from "@/lib/claim-pending-runs";
 import type { AdjustState } from "../max-offer-results";
 import { HistoryView, type SavedDeal } from "./history-view";
 import "../moc.css";
@@ -44,12 +45,19 @@ interface SavedOutputs {
   score?: number;
 }
 
-export default async function MaxOfferHistoryPage() {
+export default async function MaxOfferHistoryPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ report?: string | string[] }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // Deals they saved from Henry's website show up here even after a normal login.
+  await claimPendingRunsSafely(user.id, user.email ?? "");
 
   const { data: rows } = await supabase
     .from("tool_results")
@@ -93,5 +101,7 @@ export default async function MaxOfferHistoryPage() {
     };
   });
 
-  return <HistoryView deals={deals} />;
+  // ?report=<id> (from a sign-in link) opens that report directly.
+  const { report } = await searchParams;
+  return <HistoryView deals={deals} initialReportId={typeof report === "string" ? report : undefined} />;
 }

@@ -1,4 +1,5 @@
 import "server-only";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { contactFields, quoteList } from "@/lib/ghl-format";
 
@@ -60,6 +61,8 @@ export function toolCompletionPayload(args: {
   segment?: string;
   stage?: Stage;
   customFields?: Record<string, string | number>;
+  /** The run's cal- answer tags (see calculatorAnswerTags) and the same-group tags to remove. */
+  answers?: { tags: string[]; removeTags: string[] };
 }): GhlSyncPayload {
   // tool key "max_offer" → tag prefix "max-offer"
   const prefix = args.tool.replace(/_/g, "-");
@@ -68,14 +71,17 @@ export function toolCompletionPayload(args: {
   // Stage travels as a tag; removeTags below lists the other two stage tags so the Zap can
   // take them off, leaving exactly one stage tag per contact.
   if (args.stage) tags.push(`stage:${args.stage}`);
+  if (args.answers) tags.push(...args.answers.tags);
+  const removeTags = [
+    ...(args.stage ? STAGES.filter((s) => s !== args.stage).map((s) => `stage:${s}`) : []),
+    ...(args.answers?.removeTags ?? []),
+  ];
   return {
     email: args.email,
     ...nameFields(args.name),
     event: "tool_completed",
     tags,
-    removeTags: args.stage
-      ? STAGES.filter((s) => s !== args.stage).map((s) => `stage:${s}`)
-      : undefined,
+    removeTags: removeTags.length ? removeTags : undefined,
     stage: args.stage,
     customFields: args.customFields,
   };
@@ -91,6 +97,9 @@ export const AUTH_EMAIL_LINK_FIELD = "contact_closing_table_os_action_link";
 export const AUTH_EMAIL_TAGS = {
   signup: "closing-table-os:confirm-email",
   recovery: "closing-table-os:reset-password",
+  /** One-time sign-in link for someone who used the GHL calculator page with an email that
+   *  already has an account (see /api/calculator-signup). */
+  login: "closing-table-os:login-link",
 } as const;
 export type AuthEmailKind = keyof typeof AUTH_EMAIL_TAGS;
 
@@ -169,7 +178,13 @@ async function postToGhl(payload: GhlSyncPayload, opts: { required?: boolean } =
  */
 export async function syncToGhl(
   payload: GhlSyncPayload,
-  ctx: { userId: string; tool?: ToolKey },
+  ctx: {
+    userId: string;
+    tool?: ToolKey;
+    /** Client to record failures with. Defaults to the signed-in user's; pass the admin
+     *  client from routes that have no session (e.g. the GHL calculator signup). */
+    logWith?: SupabaseClient;
+  },
 ): Promise<{ ok: boolean }> {
   try {
     await postToGhl(payload);
@@ -178,7 +193,7 @@ export async function syncToGhl(
     const message = err instanceof Error ? err.message : String(err);
     console.error("[ghl] sync failed:", message);
     try {
-      const supabase = await createClient();
+      const supabase = ctx.logWith ?? (await createClient());
       await supabase.from("sync_failures").insert({
         user_id: ctx.userId,
         tool: ctx.tool ?? null,
