@@ -27,8 +27,8 @@ export default async function LoginPage({
   const { mode, error } = await searchParams;
   const initialMode = mode === "signup" || mode === "forgot" ? mode : "signin";
   const notice =
-    error === "link_expired" || error === "invalid_link"
-      ? "That sign-in link has expired or was already used. Sign in below, or use “Forgot password?” to get a new link."
+    error === "link_expired" || error === "invalid_link" || error === "reset_expired"
+      ? "That link expired or was already used. Sign in below."
       : undefined;
 
   return (

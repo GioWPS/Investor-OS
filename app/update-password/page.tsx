@@ -5,12 +5,18 @@ import { BrandMark } from "@/components/brand-mark";
 import "../brand-os.css";
 
 /**
- * Where the password-reset email lands (via /auth/callback?next=/update-password, which
- * exchanges the one-time code for a session first). By the time this renders, the user
- * has a valid session created BY the emailed link — that's what proves they own the
- * inbox, so it's safe to let them set a new password here.
+ * Two ways in, both through a link emailed to the person (that's what proves they own the
+ * inbox, so it's safe to let them set a password here):
+ *  • Password reset → /auth/callback?next=/update-password
+ *  • First password for a website-calculator account → /auth/confirm sends people with
+ *    needs_password here as /update-password?setup=1&next=<their report>. The OS layout
+ *    also sends them here if they arrive any other way before setting one.
  */
-export default async function UpdatePasswordPage() {
+export default async function UpdatePasswordPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ setup?: string | string[]; next?: string | string[] }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -18,6 +24,12 @@ export default async function UpdatePasswordPage() {
 
   // No session = they navigated here directly (or the link expired). Nothing to do.
   if (!user) redirect("/login?error=reset_expired");
+
+  const params = await searchParams;
+  const setup = params.setup === "1" || user.user_metadata?.needs_password === true;
+  // Same-site paths only (open-redirect protection).
+  const rawNext = typeof params.next === "string" ? params.next : "";
+  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/dashboard";
 
   return (
     <div className="os-scope">
@@ -36,12 +48,21 @@ export default async function UpdatePasswordPage() {
               className="os-title"
               style={{ fontSize: 34, textAlign: "center", margin: "8px 0 6px" }}
             >
-              New password
+              {setup ? "Set your password" : "New password"}
             </h1>
-            <p style={{ textAlign: "center", color: "var(--os-fg-2)", fontSize: 14, margin: "0 0 24px" }}>
-              Choose a new password for <b style={{ color: "var(--os-fg)" }}>{user.email}</b>.
+            <p style={{ textAlign: "center", color: "var(--os-fg-2)", fontSize: 14, margin: "0 0 24px", lineHeight: 1.5 }}>
+              {setup ? (
+                <>
+                  Your deal is saved. Set a password for <b style={{ color: "var(--os-fg)" }}>{user.email}</b> so
+                  you can log in to the Closing Table OS from any device.
+                </>
+              ) : (
+                <>
+                  Choose a new password for <b style={{ color: "var(--os-fg)" }}>{user.email}</b>.
+                </>
+              )}
             </p>
-            <UpdatePasswordForm />
+            <UpdatePasswordForm next={next} setup={setup} />
           </div>
         </div>
       </div>

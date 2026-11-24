@@ -28,9 +28,9 @@ const COPY: Record<Mode, { title: string; subtitle: string; cta: string }> = {
     cta: "Create my account",
   },
   forgot: {
-    title: "Reset password",
-    subtitle: "We'll email you a link to set a new password.",
-    cta: "Email me a reset link",
+    title: "Set a password",
+    subtitle: "Forgot it, or never made one? We'll email you a link to set your password.",
+    cta: "Email me a link",
   },
 };
 
@@ -48,17 +48,28 @@ export function LoginForm({
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "working" | "sent" | "error">("idle");
   const [error, setError] = useState("");
+  // Show "Never set a password? Set one now" under an error. Accounts made from the website
+  // calculator start with no password, so "wrong password" may really mean "none yet".
+  const [offerSetPassword, setOfferSetPassword] = useState(false);
 
   function switchMode(next: Mode) {
     setMode(next);
     setStatus("idle");
     setError("");
+    setOfferSetPassword(false);
   }
+
+  const setPasswordLink = (
+    <button type="button" className="os-linklike" onClick={() => switchMode("forgot")}>
+      Never set a password? Set one now
+    </button>
+  );
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setStatus("working");
     setError("");
+    setOfferSetPassword(false);
 
     const supabase = createClient();
 
@@ -68,11 +79,12 @@ export function LoginForm({
         setStatus("error");
         // Supabase deliberately returns the same message for wrong password and unknown
         // email (so the form can't be used to probe which emails have accounts).
-        setError(
-          error.message === "Email not confirmed"
-            ? "Please confirm your email first — check your inbox for the confirmation link."
-            : "Email or password is incorrect.",
-        );
+        if (error.message === "Email not confirmed") {
+          setError("Please confirm your email first — check your inbox for the confirmation link.");
+        } else {
+          setError("Email or password is incorrect.");
+          setOfferSetPassword(true);
+        }
         return;
       }
       // Full navigation (not router.push) so the fresh auth cookies are sent to the server.
@@ -102,7 +114,8 @@ export function LoginForm({
       // with no identities instead of an error — surface a helpful message.
       if (data.user && data.user.identities?.length === 0) {
         setStatus("error");
-        setError("That email already has an account — sign in instead.");
+        setError("That email already has an account. Sign in, or set a password if you never made one.");
+        setOfferSetPassword(true);
         return;
       }
       setStatus("sent");
@@ -135,8 +148,8 @@ export function LoginForm({
             </>
           ) : (
             <>
-              We sent a password-reset link to <b style={{ color: "var(--os-fg)" }}>{email}</b>.
-              Click it to choose a new password.
+              If <b style={{ color: "var(--os-fg)" }}>{email}</b> has an account, we sent it a link.
+              Click it to set your password.
             </>
           )}
         </p>
@@ -201,8 +214,11 @@ export function LoginForm({
         </div>
       )}
 
-      {notice && (
-        <p style={{ color: "var(--os-orange)", fontSize: 13, margin: "0 0 14px", lineHeight: 1.5 }}>{notice}</p>
+      {notice && mode === "signin" && (
+        <p style={{ color: "var(--os-orange)", fontSize: 13, margin: "0 0 14px", lineHeight: 1.5 }}>
+          {notice}
+          {mode === "signin" && !offerSetPassword && <> {setPasswordLink}</>}
+        </p>
       )}
 
       <label className="os-label" htmlFor="email">
@@ -241,13 +257,16 @@ export function LoginForm({
       {mode === "signin" && (
         <p style={{ textAlign: "right", margin: "8px 0 0" }}>
           <button type="button" className="os-linklike" onClick={() => switchMode("forgot")}>
-            Forgot password?
+            Forgot or never set a password?
           </button>
         </p>
       )}
 
       {status === "error" && (
-        <p style={{ color: "#FF7A93", fontSize: 13, margin: "12px 0 0" }}>{error}</p>
+        <p style={{ color: "#FF7A93", fontSize: 13, margin: "12px 0 0", lineHeight: 1.5 }}>
+          {error}
+          {offerSetPassword && <> {setPasswordLink}</>}
+        </p>
       )}
 
       <button

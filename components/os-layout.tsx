@@ -17,6 +17,9 @@ export async function OsLayout({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  // Accounts created from the website calculator have no password until they set one.
+  // Nothing in the OS opens until they do (Tazz, Nov 23, 2026).
+  if (user.user_metadata?.needs_password === true) redirect("/update-password?setup=1");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -29,9 +32,7 @@ export async function OsLayout({
     <OsShell
       email={user.email ?? ""}
       initial={name.slice(0, 1).toUpperCase()}
-      variant={variant}
-      needsPassword={user.user_metadata?.needs_password === true}
-    >
+      variant={variant}    >
       {children}
     </OsShell>
   );

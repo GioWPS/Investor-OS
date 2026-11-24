@@ -10,7 +10,8 @@ import { claimPendingRuns } from "@/lib/claim-pending-runs";
  *
  * verifyOtp checks the single-use token with Supabase and sets the session cookies on THIS
  * response, so the person arrives signed in. Then any pending runs they submitted from the
- * GHL page are attached to their Reports.
+ * GHL page are attached to their Reports. People with no password yet (new website-calculator
+ * accounts) go to "Set your password" first, then on to `next`.
  */
 const ALLOWED_TYPES: EmailOtpType[] = ["email", "magiclink", "recovery"];
 
@@ -46,5 +47,10 @@ export async function GET(request: Request) {
     }
   }
 
+  if (user?.user_metadata?.needs_password === true) {
+    return NextResponse.redirect(
+      `${origin}/update-password?setup=1&next=${encodeURIComponent(next)}`,
+    );
+  }
   return NextResponse.redirect(`${origin}${next}`);
 }

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOP · Website Calculator Signup Flow</title>
+<style>
+  :root { --ink:#1b1426; --soft:#5d5470; --line:#e6e1ee; --card:#ffffff; --bg:#f6f4f9; --purple:#6b3fa0; --purple-bg:#f1eaf9; --lime:#4f7a00; --lime-bg:#eef7d9; --warn:#9a4a00; --warn-bg:#fff1e3; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; padding:32px 16px 80px; }
+  .wrap { max-width:860px; margin:0 auto; }
+  .eyebrow { font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--purple); font-weight:700; }
+  h1 { font-size:30px; line-height:1.15; margin:6px 0 18px; }
+  h2 { font-size:19px; margin:0 0 10px; }
+  table { width:100%; border-collapse:collapse; font-size:15px; }
+  td, th { text-align:left; padding:9px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--soft); font-weight:600; font-size:13px; }
+  .header { background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
+  .header td:first-child { width:150px; font-weight:700; color:var(--soft); }
+  .goal { font-size:17px; margin:18px 0 26px; }
+  .step { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px; margin:0 0 16px; }
+  .num { display:inline-flex; flex:none; width:30px; height:30px; border-radius:9px; background:var(--purple); color:#fff; font-weight:700; align-items:center; justify-content:center; margin-right:10px; }
+  .step h2 { display:flex; align-items:center; }
+  .path { font-family:ui-monospace, Menlo, monospace; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:14px; display:block; margin:8px 0; }
+  pre { font-family:ui-monospace, Menlo, monospace; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-size:13.5px; white-space:pre-wrap; margin:6px 0 12px; }
+  code, .tag { font-family:ui-monospace, Menlo, monospace; font-size:13.5px; background:var(--purple-bg); color:var(--purple); padding:2px 7px; border-radius:6px; }
+  .tag { white-space:nowrap; }
+  .call { border-radius:10px; padding:10px 14px; margin:12px 0 0; font-size:15px; }
+  .once { background:var(--lime-bg); color:var(--lime); }
+  .reuse { background:var(--purple-bg); color:var(--purple); }
+  .warn { background:var(--warn-bg); color:var(--warn); }
+  .call b { color:inherit; }
+  ul, ol { margin:6px 0 0; padding-left:22px; }
+  li { margin:4px 0; }
+  .label { font-weight:700; font-size:13px; color:var(--soft); text-transform:uppercase; letter-spacing:.06em; margin-top:10px; }
+  .status { display:inline-block; font-size:12px; font-weight:700; background:var(--warn-bg); color:var(--warn); border-radius:6px; padding:2px 8px; margin-left:8px; vertical-align:middle; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Henry Washington · Tech &amp; Setup SOP</div>
+  <h1>Website calculator signup flow <span class="status">Draft for review</span></h1>
+
+  <table class="header">
+    <tr><td>Use for</td><td>Understanding what happens when someone uses the Max Offer Calculator on henrywashington.com, fixing the sign-in email (workflow C), or testing the flow.</td></tr>
+    <tr><td>Owner</td><td>Tazz (GHL email + workflow) · Gio (the app)</td></tr>
+    <tr><td>Platform</td><td>henrywashington.com (GHL page), Closing Table OS (app.henrywashington.com), Zapier, GoHighLevel</td></tr>
+    <tr><td>Time</td><td>5 min to read · 10 min to test both paths</td></tr>
+    <tr><td>Last updated</td><td>Nov 23, 2026</td></tr>
+  </table>
+
+  <p class="goal">Everyone who runs a deal on Henry's website calculator gets one email. Clicking it opens their report in the Closing Table OS, and asks them to set a password first if they don't have one.</p>
+
+  <!-- 1 -->
+  <div class="step">
+    <h2><span class="num">1</span>Know the flow: one email for everyone</h2>
+    <p>The visitor fills in the calculator, their first name and email, and the 3 questions. Then:</p>
+    <table>
+      <tr><th></th><th>New email</th><th>Email already has an account</th></tr>
+      <tr><td><b>Account</b></td><td>Created automatically, no password yet</td><td>Nothing new is created</td></tr>
+      <tr><td><b>Deal</b></td><td>Saved to their Reports</td><td>Saved and waiting. It joins their Reports when they sign in.</td></tr>
+      <tr><td><b>Page shows</b></td><td colspan="2">"Check your inbox" (same for everyone)</td></tr>
+      <tr><td><b>Email</b></td><td colspan="2">Workflow C: "Your deal is saved. Here's your sign-in link"</td></tr>
+    </table>
+    <div class="call warn"><b>⚠️ Why nobody is signed in from the page:</b> anyone can type anyone's email into the calculator. Only the person who opens the email can get in, so a stranger can't take over someone's account.</div>
+  </div>
+
+  <!-- 2 -->
+  <div class="step">
+    <h2><span class="num">2</span>What happens when they click the email button</h2>
+    <p>The link signs them in to their account, then checks for a password:</p>
+    <table>
+      <tr><th>They...</th><th>They see</th></tr>
+      <tr><td>Already have a password</td><td>Their report, right away</td></tr>
+      <tr><td>Don't have one yet (new, or never set one)</td><td><b>"Set your password"</b> screen first, then their report</td></tr>
+    </table>
+    <p>If they close the "Set your password" screen, nothing in the OS opens until they set one. The next time they get in, it asks again.</p>
+    <p>GHL gets: <span class="tag">closing-table-os:signed-up</span> (new people), <span class="tag">tool:max-offer-used</span>, one <span class="tag">stage:</span> tag, and the <span class="tag">cal-fund:</span> <span class="tag">cal-cash:</span> <span class="tag">cal-exp:</span> answer tags.</p>
+  </div>
+
+  <!-- 3 -->
+  <div class="step">
+    <h2><span class="num">3</span>When the link is old or they come back later</h2>
+    <ul>
+      <li><b>Link expired or already used</b> (it works once, for about an hour): the login page says "That link expired" with a <b>"Never set a password? Set one now"</b> button.</li>
+      <li><b>That button</b> (and "Forgot or never set a password?") emails them a set-password link through workflow B.</li>
+      <li><b>Wrong password</b> also shows "Never set a password? Set one now".</li>
+      <li><b>Running the calculator again</b> always sends a fresh link.</li>
+      <li><b>Never clicks the email:</b> the deal stays saved in their account until they do.</li>
+    </ul>
+    <div class="call reuse"><b>Backup link for any email:</b> <code>https://app.henrywashington.com/login?mode=forgot</code> opens the set-password screen and never expires.</div>
+  </div>
+
+  <!-- 4 -->
+  <div class="step">
+    <h2><span class="num">4</span>Workflow C (Login Link): exact build</h2>
+    <span class="path">Automation → Workflows → + Create Workflow → Start from Scratch</span>
+    <div class="label">Name</div><pre>Closing Table OS – Login Link</pre>
+    <div class="label">Trigger</div>
+    <span class="path">Add New Trigger → Contact Tag → Add filters → Tag Added → closing-table-os:login-link → Save Trigger</span>
+    <div class="label">Action 1 · Send Email · From name</div><pre>The Henry Washington Team</pre>
+    <div class="label">Subject</div><pre>Your deal is saved. Here's your sign-in link</pre>
+    <div class="label">Preview text</div><pre>One tap opens your report. The link works once and expires in about an hour.</pre>
+    <div class="label">Body</div>
+<pre>Hi {{contact.first_name}},
+
+I saved the deal you just ran through the Max Offer Calculator to your Closing Table OS reports. Tap below to sign in and see it.
+
+This link works once and expires in about an hour. If it expires, run the calculator again and we'll send a fresh one, or log in to the OS as usual.</pre>
+    <div class="label">Button text</div><pre>Open my report</pre>
+    <div class="label">Button link (merge-field picker → Contact → Closing Table OS Action Link)</div><pre>{{contact.contact_closing_table_os_action_link}}</pre>
+    <div class="label">Below the button</div>
+<pre>Button not working? Paste this into your browser:
+{{contact.contact_closing_table_os_action_link}}
+
+Didn't request this? Ignore this email.</pre>
+    <div class="label">Action 2</div><pre>Remove Contact Tag → closing-table-os:login-link</pre>
+    <div class="label">Settings</div><p>Allow Re-entry <b>ON</b>. No wait step. Save Action → Save → <b>Draft → Publish</b>.</p>
+    <div class="call warn"><b>⚠️ Empty email body (happened Nov 17):</b> if the email arrives with only the subject and an unsubscribe line, the body was never saved in the Send Email step. GHL's AI workflow builder leaves the body blank. Paste the body above into the step and click <b>Save Action</b>, then <b>Save</b>.</div>
+    <div class="call warn"><b>⚠️ Don't add UTMs to the button link.</b> It breaks the sign-in link.</div>
+    <div class="call once"><b>Build once.</b> Never rename or delete this workflow or the <code>closing-table-os:login-link</code> tag, or returning people stop getting their sign-in emails.</div>
+  </div>
+
+  <!-- 5 -->
+  <div class="step">
+    <h2><span class="num">5</span>When something looks wrong</h2>
+    <table>
+      <tr><th>You see</th><th>Do this</th></tr>
+      <tr><td>Email arrives with no body</td><td>Step 4, first warning</td></tr>
+      <tr><td>No email at all</td><td>Check: workflow C is <b>Published</b> · <span class="path" style="display:inline;padding:2px 6px">Zapier → Zap History</span> shows a Successful run · the contact isn't on email Do Not Disturb</td></tr>
+      <tr><td>Button does nothing or the link is blank</td><td>The button link must be the merge field from the picker. GHL's "send test" always sends a blank link, so test with a real run (step 6).</td></tr>
+      <tr><td>"Signups are temporarily unavailable" (503)</td><td>Tell Gio: the app's Supabase key is missing in Vercel.</td></tr>
+      <tr><td>"Too many tries"</td><td>Normal: max 5 tries per email per hour. Wait an hour or use a new test email.</td></tr>
+    </table>
+  </div>
+
+  <!-- 6 -->
+  <div class="step">
+    <h2><span class="num">6</span>Test both paths (do this after any change)</h2>
+    <p>Use Gmail's <b>+ trick</b> so you never run out of "new" emails: <code>yourname+calc1@gmail.com</code>, <code>yourname+calc2@gmail.com</code>, and so on. They all land in your normal inbox, but the app treats each one as a brand-new person.</p>
+    <ol>
+      <li><b>New path:</b> on henrywashington.com, run the calculator with a fresh +email, e.g. <code>yourname+calc7@gmail.com</code>. The page should say "Check your inbox."</li>
+      <li>Open the email. Check that the From name, subject, body, button, and backup link are all there.</li>
+      <li>Click <b>Open my report</b>. You should see <b>"Set your password"</b>. Set one, and your report opens.</li>
+      <li><b>Returning path:</b> run the calculator again with the <b>same</b> +email, open the new email, and click the button. Your report opens right away, with no password screen. Reports should now show <b>2 deals</b>.</li>
+      <li>Click the same button again. It should go to the login page with "link expired". That's correct, because the link only works once.</li>
+      <li><span class="path">GoHighLevel → Contacts → search the +email → Tags</span> should show <span class="tag">tool:max-offer-used</span>, a <span class="tag">stage:</span> tag, and the <span class="tag">cal-</span> tags, and <b>no</b> leftover <span class="tag">closing-table-os:login-link</span>.</li>
+    </ol>
+    <div class="call reuse"><b>♻️ Next time:</b> the delta is only a new +number on the test email. The flow, workflow C, and the tags stay the same. When a new tool (Funding Path Finder) gets a website version, it follows this same two-path pattern with its own email workflow.</div>
+  </div>
+</div>
+</body>
+</html>

@@ -44,28 +44,37 @@ fetch("https://app.henrywashington.com/api/calculator-signup", {
 
 ## Responses
 
+Everyone gets the same answer and the same email (Tazz, Nov 23, 2026). The page never signs
+anyone in; the emailed link does.
+
 | Status | Body | What the page should do |
 |---|---|---|
-| 200 | `{ "status": "signed_in", "redirect": "https://app…/auth/confirm?…" }` | `window.location.href = redirect` — they land on their report, signed in |
-| 200 | `{ "status": "check_inbox", "message": "Check your inbox" }` | Show "Check your inbox — we emailed you a sign-in link" |
+| 200 | `{ "status": "check_inbox", "message": "Check your inbox" }` | Show "Check your inbox — we emailed you a link to your report" |
 | 400 | `{ "error": "…" }` | Show the error next to the form |
 | 429 | `{ "error": "Too many tries…" }` | Show the error |
 | 5xx | `{ "error": "…" }` | Show the error; they can retry |
 
-The honeypot gets a fake `check_inbox` on purpose — don't treat it as a real signup.
+`signed_in` is no longer returned (removed Nov 23, 2026). The honeypot gets the same
+`check_inbox` on purpose — don't treat it as a real signup.
 
 ## What happens behind it
-- **New email:** account created (no password yet), the deal is computed with the app's own
-  formula and saved to their Reports, GHL gets `closing-table-os:signed-up`,
-  `tool:max-offer-used` and a `stage:` tag. The redirect link is one-time and short-lived.
-  Inside the app a banner asks them to set a password.
-- **Existing email:** nobody is signed in. The deal is saved as pending, and the Zap tags the
-  contact `closing-table-os:login-link` with the link in **Closing Table OS Action Link**.
-  A GHL workflow (Tazz) emails it. Clicking it signs them in and adds the deal to Reports.
+- **New email:** account created with no password; the deal is computed with the app's own
+  formula and saved to their Reports. GHL gets `closing-table-os:signed-up`,
+  `tool:max-offer-used`, a `stage:` tag and the `cal-` answer tags.
+- **Existing email:** the deal is saved as pending and joins their Reports when they sign in.
+  The name in GHL comes from their profile, never from the form.
+- **Both:** the Zap tags the contact `closing-table-os:login-link` with a one-time link in
+  **Closing Table OS Action Link**, and GHL workflow C emails it. The link works once and
+  expires in about an hour.
+- **Clicking the link:** signs them in to their account. If they have no password yet, they
+  see **"Set your password"** first, then their report. Nothing in the OS opens until a
+  password is set. If they already have one, they go straight to the report.
+- **Expired link / no password:** the login page offers "Never set a password? Set one now",
+  which emails a set-password link (workflow B).
 - **Limits:** 100 attempts per IP per hour (events share Wi-Fi), 5 per email per hour.
 
 ## GHL workflow C — Login link (approved by Tazz, Nov 17, 2026)
-For people who already have an account and use the calculator on Henry's website.
+Goes to everyone who uses the calculator on Henry's website (new and returning).
 
 - **Name:** Closing Table OS – Login Link
 - **Trigger:** Contact Tag → Tag Added → `closing-table-os:login-link`

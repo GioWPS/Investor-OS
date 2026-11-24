@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { BrandMark } from "@/components/brand-mark";
-import { SetPasswordBanner } from "@/components/set-password-banner";
 import { TOOLS, type ToolKey } from "@/lib/tools/registry";
 import { LIVE_MODULES } from "@/lib/modules";
 import { signOut } from "@/app/dashboard/actions";
@@ -52,15 +51,12 @@ export function OsShell({
   email,
   initial,
   variant = "page",
-  needsPassword = false,
   children,
 }: {
   email: string;
   initial: string;
   /** "tool" renders the main area flush, so a tool's own full-page design shows as-is. */
   variant?: "page" | "tool";
-  /** Account created from the GHL page with no password yet → show the set-password prompt. */
-  needsPassword?: boolean;
   children: ReactNode;
 }) {
   const pathname = usePathname() ?? "";
@@ -158,7 +154,6 @@ export function OsShell({
       </div>
     </aside>
         <main className={isTool ? "os-main os-main--tool" : "os-main"}>
-          {needsPassword && <SetPasswordBanner />}
           {children}
         </main>
       </div>

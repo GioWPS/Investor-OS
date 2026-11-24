@@ -1,0 +1,332 @@
+<title>Calculator Signup Paths</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a tree that grows UP from the starting point at the bottom; sticky mode switch on top; approvals under the root. */
+:root {
+  --bg: #f5f2f9; --panel: #ffffff; --panel-2: #efe9f6; --line: #cfc5dc; --fg: #1a1324; --fg-2: #5b5068;
+  --purple: #7b3fb5; --purple-soft: #efe4fa; --lime: #4c7a00; --lime-soft: #edf7d6;
+  --ok: #0f7d6e; --ok-soft: #dcf5f0; --stuck: #c2410c; --stuck-soft: #fde6d8; --warn: #a16207; --warn-soft: #fdf3d4;
+  --display: "Anton", Impact, "Arial Narrow", sans-serif;
+  --body: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #06040a; --panel: #110c1b; --panel-2: #181124; --line: #3a2f4b; --fg: #f4f1f7; --fg-2: #a99fb6;
+  --purple: #b981e6; --purple-soft: #2a1a3d; --lime: #c6ff3d; --lime-soft: #26330b;
+  --ok: #38e1d6; --ok-soft: #0c2b29; --stuck: #ff7a3d; --stuck-soft: #3a1a0c; --warn: #f5c542; --warn-soft: #33290b;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #06040a; --panel: #110c1b; --panel-2: #181124; --line: #3a2f4b; --fg: #f4f1f7; --fg-2: #a99fb6;
+  --purple: #b981e6; --purple-soft: #2a1a3d; --lime: #c6ff3d; --lime-soft: #26330b;
+  --ok: #38e1d6; --ok-soft: #0c2b29; --stuck: #ff7a3d; --stuck-soft: #3a1a0c; --warn: #f5c542; --warn-soft: #33290b;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line);
+  padding-block: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.bar-in { max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between; }
+h1 { font-family: var(--display); font-weight: 400; font-size: 26px; letter-spacing: .02em; text-transform: uppercase; margin: 0; line-height: 1; }
+.sub { color: var(--fg-2); font-size: 13px; margin-top: 4px; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--panel); }
+.seg button { font: 600 13px var(--body); border: 0; background: transparent; color: var(--fg-2); padding: 7px 14px; border-radius: 999px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.zoom button { font: 700 14px var(--mono); width: 34px; padding: 7px 0; }
+button:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
+
+.legend { max-width: 1200px; margin: 10px auto 0; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--fg-2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; border: 2px solid; display: inline-block; }
+
+.stage { padding-block: 24px 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.scroller { overflow: auto; border-radius: 14px; }
+.tree { transform: scaleY(-1); width: max-content; margin: 0 auto; padding: 4px 8px; }
+
+/* Org-chart connectors, drawn top-down then flipped so the root sits at the bottom */
+.tree ul { display: flex; justify-content: center; position: relative; margin: 0; padding: 22px 0 0; }
+.tree > ul { padding-top: 0; }
+.tree li { list-style: none; position: relative; padding: 22px 5px 0; display: flex; flex-direction: column; align-items: center; }
+.tree > ul > li { padding-top: 0; }
+.tree li::before, .tree li::after { content: ""; position: absolute; top: 0; right: 50%; width: 50%; height: 22px; border-top: 2px solid var(--line); }
+.tree li::after { right: auto; left: 50%; border-left: 2px solid var(--line); }
+.tree li:only-child::before, .tree li:only-child::after { display: none; }
+.tree li:only-child { padding-top: 0; }
+.tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
+.tree li:last-child::before { border-right: 2px solid var(--line); border-radius: 0 8px 0 0; }
+.tree li:first-child::after { border-radius: 8px 0 0 0; }
+.tree ul ul::before { content: ""; position: absolute; top: 0; left: 50%; height: 22px; border-left: 2px solid var(--line); }
+.tree > ul > li:only-child::before, .tree > ul > li:only-child::after { display: none; }
+
+.node { transform: scaleY(-1); width: 146px; text-align: left; font: 500 12.5px/1.35 var(--body); color: var(--fg);
+  background: var(--panel); border: 2px solid var(--line); border-radius: 10px; padding: 8px 10px 9px; position: relative; }
+.node[data-has-kids] { cursor: pointer; }
+.node[data-has-kids]:hover { border-color: var(--fg-2); }
+.k { display: block; font: 700 9.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg-2); margin-bottom: 3px; }
+.node.act { background: transparent; border-style: dashed; }
+.node.start { width: 190px; background: var(--fg); color: var(--bg); border-color: var(--fg); font-size: 13.5px; font-weight: 600; }
+.node.start .k { color: var(--bg); opacity: .7; }
+.node.ok { background: var(--ok-soft); border-color: var(--ok); }
+.node.ok .k { color: var(--ok); }
+.node.stuck { background: var(--stuck-soft); border-color: var(--stuck); }
+.node.stuck .k { color: var(--stuck); }
+.node.warn { background: var(--warn-soft); border-color: var(--warn); }
+.node.warn .k { color: var(--warn); }
+.node.c1 { box-shadow: 0 0 0 3px var(--lime-soft); border-color: var(--lime); }
+.node.c2 { box-shadow: 0 0 0 3px var(--purple-soft); border-color: var(--purple); }
+.chip { display: inline-block; font: 700 9.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; padding: 2px 6px; border-radius: 5px; margin-top: 6px; }
+.chip.c1 { background: var(--lime-soft); color: var(--lime); }
+.chip.c2 { background: var(--purple-soft); color: var(--purple); }
+.more { display: block; margin-top: 5px; font: 700 10px var(--mono); color: var(--purple); }
+
+.approve { max-width: 1200px; margin: 0 auto; padding-block: 18px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.approve h2 { font-family: var(--display); font-weight: 400; text-transform: uppercase; letter-spacing: .02em; font-size: 20px; margin: 0 0 10px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.card { background: var(--panel); border: 2px solid var(--line); border-radius: 12px; padding: 14px 16px; min-width: 0; }
+.card.c1 { border-color: var(--lime); } .card.c2 { border-color: var(--purple); }
+.card h3 { margin: 6px 0 6px; font-size: 16px; }
+.card ul { margin: 0; padding-left: 18px; color: var(--fg-2); font-size: 13.5px; line-height: 1.5; }
+.who { font-size: 12.5px; color: var(--fg-2); margin-top: 8px; }
+.hint { color: var(--fg-2); font-size: 13px; margin: 10px 0 0; }
+@media (prefers-reduced-motion: no-preference) { .node { transition: border-color .15s; } }
+</style>
+
+<header class="bar">
+  <div class="bar-in">
+    <div>
+      <h1>Calculator Signup Paths</h1>
+      <div class="sub">Start at the bottom. Each branch up is a choice the person makes. Tap a box to fold its branch.</div>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Which version">
+        <button id="m-today" type="button" aria-pressed="false">Today</button>
+        <button id="m-new" type="button" aria-pressed="true">Proposed</button>
+      </div>
+      <div class="seg zoom" role="group" aria-label="Zoom">
+        <button id="z-out" type="button" aria-label="Zoom out">−</button>
+        <button id="z-fit" type="button" style="width:auto;padding:7px 12px;font-size:12px">Fit</button>
+        <button id="z-in" type="button" aria-label="Zoom in">+</button>
+      </div>
+    </div>
+  </div>
+  <div class="legend">
+    <span><i class="sw" style="border-style:dashed;border-color:var(--fg-2)"></i>What they do</span>
+    <span><i class="sw" style="border-color:var(--line);background:var(--panel)"></i>What happens</span>
+    <span><i class="sw" style="border-color:var(--ok);background:var(--ok-soft)"></i>They're in</span>
+    <span><i class="sw" style="border-color:var(--stuck);background:var(--stuck-soft)"></i>Stuck</span>
+    <span><i class="sw" style="border-color:var(--warn);background:var(--warn-soft)"></i>Weak spot</span>
+    <span><i class="sw" style="border-color:var(--lime);background:var(--lime-soft)"></i>New (changes 1–3)</span>
+    <span><i class="sw" style="border-color:var(--purple);background:var(--purple-soft)"></i>Optional (change 4)</span>
+  </div>
+</header>
+
+<main>
+  <div class="stage"><div class="scroller" id="scroller"><div class="tree" id="tree"></div></div></div>
+
+  <section class="approve" aria-labelledby="ap">
+    <h2 id="ap">What you're approving</h2>
+    <div class="cards">
+      <div class="card c1">
+        <span class="chip c1">Change 1 · app · Gio</span>
+        <h3>One email for everyone</h3>
+        <ul>
+          <li>New and returning people both see "Check your inbox"</li>
+          <li>Everyone gets the same email (workflow C, already built)</li>
+          <li>Nobody is signed in until they click their own email, so a stranger can't use someone else's email</li>
+        </ul>
+      </div>
+      <div class="card c1">
+        <span class="chip c1">Change 2 · app · Gio</span>
+        <h3>The link checks for a password</h3>
+        <ul>
+          <li>Has a password: straight to their report</li>
+          <li>No password: "Set your password for the OS" screen first, then the report</li>
+          <li>Replaces the in-app banner</li>
+        </ul>
+      </div>
+      <div class="card c1">
+        <span class="chip c1">Change 3 · app · Gio</span>
+        <h3>Nobody gets stuck at login</h3>
+        <ul>
+          <li>Expired-link and wrong-password messages get a "Never set a password? Set one now" button</li>
+          <li>"Forgot password?" becomes "Forgot or never set a password?"</li>
+        </ul>
+      </div>
+      <div class="card c2">
+        <span class="chip c2">Optional · Change 4 · GHL · Tazz builds</span>
+        <h3>Reminders if they ignore the email</h3>
+        <ul>
+          <li>Day 1 and Day 3: "Your deal is waiting"</li>
+          <li>Stops as soon as they set a password</li>
+        </ul>
+      </div>
+    </div>
+    <p class="hint">Flip between "Today" and "Proposed" at the top to see which paths change. Approve or ask for edits in the chat.</p>
+  </section>
+</main>
+
+<script>
+const TREE = { id: "root", k: "start", t: "Runs the Max Offer Calculator on henrywashington.com", c: [
+  { id: "new", k: "act", t: "Uses a new email", c: [
+    { id: "new-in", k: "res", t: "Lands in the OS, signed in, on their report. Banner: \"Set a password\"", c: [
+      { id: "sets", k: "act", t: "Sets a password", c: [ { id: "sets-ok", k: "ok", t: "Done. Logs in from any device." } ] },
+      { id: "skips", k: "act", t: "Skips it and leaves", c: [
+        { id: "none", when: "today", k: "warn", t: "Nothing reminds them to come back and set one" },
+        { id: "d1", when: "new", chg: 2, k: "res", t: "Day 1 email: \"Set a password to get back in anytime\"", c: [
+          { id: "d1-click", k: "act", t: "Clicks the button", c: [ { id: "d1-ok", k: "ok", t: "Sets a password. Reminders stop." } ] },
+          { id: "d1-ign", k: "act", t: "Ignores it", c: [
+            { id: "d3", k: "res", t: "Day 3 reminder email", c: [
+              { id: "d3-click", k: "act", t: "Clicks the button", c: [ { id: "d3-ok", k: "ok", t: "Sets a password. Reminders stop." } ] },
+              { id: "d3-ign", k: "act", t: "Ignores it", c: [ { id: "d3-end", k: "res", t: "Reminders end. The login page and the calculator still get them in." } ] }
+            ] }
+          ] }
+        ] },
+        { id: "login", k: "act", t: "Comes back to the app login page", c: [
+          { id: "login-today", when: "today", k: "stuck", t: "\"Email or password is incorrect\"", c: [
+            { id: "create", k: "act", t: "Tries \"Create account\"", c: [ { id: "loop", k: "stuck", t: "\"That email already has an account.\" Back to the start." } ] }
+          ] },
+          { id: "forgot", when: "today", k: "act", t: "Spots \"Forgot password?\"", c: [ { id: "bug", k: "warn", t: "Password saves, but the banner keeps asking for one (bug)" } ] },
+          { id: "login-new", when: "new", chg: 1, k: "res", t: "Message now says \"Never set a password? Set one now\"", c: [
+            { id: "login-new-ok", k: "ok", t: "Emailed link, sets a password, signed in. Banner goes away." }
+          ] }
+        ] },
+        { id: "again", k: "act", t: "Runs the calculator again", c: [ { id: "again-r", k: "res", t: "Gets the sign-in email. Same as the right side." } ] }
+      ] }
+    ] }
+  ] },
+  { id: "old", k: "act", t: "Uses an email that already has an account", c: [
+    { id: "inbox", k: "res", t: "Page says \"Check your inbox\". Deal is saved and waiting.", c: [
+      { id: "emailc", k: "res", t: "Email C: \"Your deal is saved. Here's your sign-in link\"", c: [
+        { id: "click", k: "act", t: "Clicks within an hour", c: [
+          { id: "click-in", k: "res", t: "Signed in to their own account. Deal added, report opens.", c: [
+            { id: "c-pw", k: "act", t: "Has a password", c: [ { id: "c-pw-ok", k: "ok", t: "Done." } ] },
+            { id: "c-nopw", k: "act", t: "Never set one", c: [ { id: "c-nopw-r", k: "res", t: "Banner asks again. Same choices as the left side." } ] }
+          ] }
+        ] },
+        { id: "exp", k: "act", t: "Link expired or already used", c: [
+          { id: "exp-r", k: "res", t: "Login page: \"That link expired\"", c: [
+            { id: "e-pw", k: "act", t: "Has a password", c: [ { id: "e-pw-ok", k: "ok", t: "Logs in. Deal is in Reports." } ] },
+            { id: "e-nopw", k: "act", t: "Never set one", c: [
+              { id: "e-today", when: "today", k: "warn", t: "Only gets in if they notice \"Forgot password?\" in the message" },
+              { id: "e-new", when: "new", chg: 1, k: "ok", t: "Clear \"Set a password\" button, then signed in" }
+            ] }
+          ] }
+        ] },
+        { id: "ign", k: "act", t: "Ignores the email", c: [ { id: "ign-ok", k: "ok", t: "Deal waits. Shows up next time they log in." } ] }
+      ] }
+    ] }
+  ] }
+] };
+
+const PROPOSED = { id: "p-root", k: "start", t: "Runs the Max Offer Calculator on henrywashington.com", c: [
+  { id: "p-inbox", k: "res", chg: 1, t: "Page says \"Check your inbox\" for everyone. Deal is saved.", c: [
+    { id: "p-email", k: "res", t: "Email: \"Your deal is saved. Here's your link\"", c: [
+      { id: "p-click", k: "act", t: "Clicks within an hour", c: [
+        { id: "p-check", k: "res", chg: 2, t: "The link checks: do they already have a password?", c: [
+          { id: "p-has", k: "act", t: "Yes, has a password", c: [ { id: "p-has-ok", k: "ok", t: "Opens their report. Deal added." } ] },
+          { id: "p-no", k: "act", t: "No password yet (new, or never set one)", c: [
+            { id: "p-set", k: "res", chg: 2, t: "Screen: \"Set your password for the OS\"", c: [
+              { id: "p-set-do", k: "act", t: "Sets it", c: [ { id: "p-set-ok", k: "ok", t: "Opens their report. Can log in from any device." } ] },
+              { id: "p-set-close", k: "act", t: "Closes the page", c: [ { id: "p-set-close-r", k: "res", t: "Next link or login asks again until a password is set" } ] }
+            ] }
+          ] }
+        ] }
+      ] },
+      { id: "p-exp", k: "act", t: "Link expired or already used", c: [
+        { id: "p-exp-r", k: "res", t: "Login page: \"That link expired\"", c: [
+          { id: "p-exp-pw", k: "act", t: "Has a password", c: [ { id: "p-exp-pw-ok", k: "ok", t: "Logs in. Deal is in Reports." } ] },
+          { id: "p-exp-no", k: "act", t: "No password yet", c: [
+            { id: "p-exp-btn", k: "res", chg: 3, t: "Button: \"Never set a password? Set one now\"", c: [
+              { id: "p-exp-ok", k: "ok", t: "New link by email, sets a password, signed in" }
+            ] }
+          ] }
+        ] }
+      ] },
+      { id: "p-ign", k: "act", t: "Ignores the email", c: [
+        { id: "p-ign-r", k: "res", t: "Deal waits in their account", c: [
+          { id: "p-d1", k: "res", chg: 4, t: "Day 1 and Day 3 reminder: \"Your deal is waiting\"", c: [
+            { id: "p-d1-click", k: "act", t: "Clicks", c: [ { id: "p-d1-ok", k: "ok", t: "Set password screen, then their report" } ] },
+            { id: "p-d1-ign", k: "act", t: "Ignores", c: [ { id: "p-d1-end", k: "res", t: "Reminders end. Running the calculator again sends a fresh link." } ] }
+          ] }
+        ] }
+      ] }
+    ] }
+  ] }
+] };
+
+const LABEL = { start: "Start here", act: "They", res: "Happens", ok: "They're in", stuck: "Stuck", warn: "Weak spot" };
+let mode = "new";
+let zoom = 1;
+const folded = new Set();
+const treeEl = document.getElementById("tree");
+const scroller = document.getElementById("scroller");
+
+function visibleKids(n) { return (n.c || []).filter(x => !x.when || x.when === mode); }
+function count(n) { return visibleKids(n).reduce((s, x) => s + 1 + count(x), 0); }
+
+function build(n) {
+  const li = document.createElement("li");
+  const box = document.createElement("div");
+  box.className = "node " + n.k + (n.chg ? (n.chg === 4 ? " c2" : " c1") : "");
+  const kids = visibleKids(n);
+  const k = document.createElement("span");
+  k.className = "k"; k.textContent = LABEL[n.k];
+  box.append(k, document.createTextNode(n.t));
+  if (n.chg) { const c = document.createElement("span"); c.className = "chip " + (n.chg === 4 ? "c2" : "c1"); c.textContent = (n.chg === 4 ? "Optional · " : "") + "Change " + n.chg; box.append(document.createElement("br"), c); }
+  if (kids.length) {
+    box.dataset.hasKids = "";
+    box.tabIndex = 0;
+    box.setAttribute("role", "button");
+    box.setAttribute("aria-expanded", String(!folded.has(n.id)));
+    const toggle = () => { folded.has(n.id) ? folded.delete(n.id) : folded.add(n.id); render(false); };
+    box.addEventListener("click", toggle);
+    box.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); } });
+    if (folded.has(n.id)) { const m = document.createElement("span"); m.className = "more"; m.textContent = "+" + count(n) + " hidden"; box.append(m); }
+  }
+  li.append(box);
+  if (kids.length && !folded.has(n.id)) {
+    const ul = document.createElement("ul");
+    kids.forEach(x => ul.append(build(x)));
+    li.append(ul);
+  }
+  return li;
+}
+
+function render(recenter) {
+  const ul = document.createElement("ul");
+  ul.append(build(mode === "today" ? TREE : PROPOSED));
+  treeEl.replaceChildren(ul);
+  treeEl.style.zoom = zoom;
+  if (recenter) scroller.scrollLeft = (scroller.scrollWidth - scroller.clientWidth) / 2;
+}
+
+function fit() {
+  treeEl.style.zoom = 1;
+  const natural = treeEl.scrollWidth;
+  zoom = Math.max(0.6, Math.min(1, (scroller.clientWidth - 8) / natural));
+  render(true);
+}
+
+function setMode(m) {
+  mode = m;
+  document.getElementById("m-today").setAttribute("aria-pressed", String(m === "today"));
+  document.getElementById("m-new").setAttribute("aria-pressed", String(m === "new"));
+  render(false); fit();
+}
+document.getElementById("m-today").addEventListener("click", () => setMode("today"));
+document.getElementById("m-new").addEventListener("click", () => setMode("new"));
+document.getElementById("z-in").addEventListener("click", () => { zoom = Math.min(1.4, zoom + 0.1); render(true); });
+document.getElementById("z-out").addEventListener("click", () => { zoom = Math.max(0.4, zoom - 0.1); render(true); });
+document.getElementById("z-fit").addEventListener("click", fit);
+
+render(true);
+const start = () => {
+  fit();
+  const root = treeEl.querySelector(".node.start");
+  if (root) root.scrollIntoView({ block: "center", inline: "center" });
+};
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
+</script>

@@ -13,12 +13,13 @@ import { buildMaxOfferRun, calculatorAnswerTags, parseCalculatorSignup } from "@
 /**
  * POST /api/calculator-signup — called by the Max Offer Calculator on Henry's GHL page.
  *
- *  • NEW email      → create the account, save the run to their Reports (computed with the
- *                     server's own formula — never the page's numbers), and return a one-time
- *                     sign-in URL. The page redirects there; they land on that report, signed in.
- *  • EXISTING email → do NOT sign anyone in (anyone can type any email). Save the run as
- *                     pending and have GHL email the owner a sign-in link. Clicking it attaches
- *                     the run to their Reports (/auth/confirm).
+ * Everyone gets the same answer and the same email (Tazz, Nov 23, 2026). Nobody is signed in
+ * from here, because anyone can type anyone's email; the emailed link proves it's theirs.
+ *  • NEW email      → create the account (no password yet) and save the run to their Reports,
+ *                     computed with the server's own formula, never the page's numbers.
+ *  • EXISTING email → save the run as pending; it joins their Reports when they sign in.
+ * Then GHL emails a one-time sign-in link to that report (workflow C). Clicking it lands on
+ * /auth/confirm, which sends anyone without a password to "Set your password" first.
  *
  * No email is sent by Supabase here; GHL sends everything. Guards: Origin allow-list (CORS),
  * a honeypot field, and rate limits per IP and per email.
@@ -104,9 +105,14 @@ export async function POST(request: Request) {
     return respond(o, 500, { error: "Something went wrong. Please try again." });
   }
 
-  // ── New email ─────────────────────────────────────────────────────────────────────────
+  let userId: string;
+  let reportId: string;
+  let name: { firstName?: string | null; lastName?: string | null };
+
   if (!created.error && created.data.user) {
-    const userId = created.data.user.id;
+    // ── New email ───────────────────────────────────────────────────────────────────────
+    userId = created.data.user.id;
+    name = { firstName };
 
     const { data: saved, error: saveError } = await admin
       .from("tool_results")
@@ -115,15 +121,15 @@ export async function POST(request: Request) {
       .single();
     if (saveError || !saved) {
       console.error("[calculator-signup] save failed:", saveError?.message);
-      return respond(o, 500, { error: "Your account was created, but we couldn't save this deal. Please sign in and run it again." });
+      return respond(o, 500, { error: "Something went wrong saving your deal. Please try again." });
     }
+    reportId = saved.id;
 
     await admin
       .from("profiles")
       .update({ ...(run.stage ? { stage: run.stage } : {}), ghl_synced_at: new Date().toISOString() })
       .eq("id", userId);
 
-    const name = { firstName };
     await syncToGhl(signupPayload(email, name), { userId, logWith: admin });
     await syncToGhl(
       toolCompletionPayload({
@@ -139,53 +145,58 @@ export async function POST(request: Request) {
       }),
       { userId, tool: "max_offer", logWith: admin },
     );
-
-    const link = await signInLink(admin, email, `/tools/max-offer/history?report=${saved.id}`);
-    if (!link) {
-      return respond(o, 500, { error: "Your deal is saved. Please sign in from the app to see it." });
+  } else {
+    // ── Existing email ──────────────────────────────────────────────────────────────────
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("id, first_name, last_name")
+      .eq("email", email)
+      .maybeSingle();
+    if (!profile) {
+      console.error("[calculator-signup] existing auth user without a profile row");
+      return respond(o, 500, { error: "Something went wrong. Please try again." });
     }
-    return respond(o, 200, { status: "signed_in", redirect: link });
-  }
-
-  // ── Existing email ────────────────────────────────────────────────────────────────────
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("id, first_name, last_name")
-    .eq("email", email)
-    .maybeSingle();
-  if (!profile) {
-    console.error("[calculator-signup] existing auth user without a profile row");
-    return respond(o, 500, { error: "Something went wrong. Please try again." });
-  }
-
-  const { data: pending, error: pendingError } = await admin
-    .from("pending_runs")
-    .insert({ user_id: profile.id, ...run.row })
-    .select("id")
-    .single();
-  if (pendingError || !pending) {
-    console.error("[calculator-signup] pending save failed:", pendingError?.message);
-    return respond(o, 500, { error: "Something went wrong. Please try again." });
-  }
-
-  const link = await signInLink(admin, email, `/tools/max-offer/history?report=${pending.id}`);
-  if (!link) return respond(o, 500, { error: "Something went wrong. Please try again." });
-
-  try {
+    userId = profile.id;
     // Name comes from OUR profile, never from this submission — otherwise anyone could
     // rename someone else's GHL contact by typing their email.
-    await sendAuthEmailViaGhl({
-      email,
-      name: { firstName: profile.first_name, lastName: profile.last_name },
-      kind: "login",
-      link,
-    });
-  } catch (err) {
-    console.error("[calculator-signup] GHL login email failed:", err instanceof Error ? err.message : err);
-    return respond(o, 502, { error: "We couldn't send your sign-in email right now. Please try again in a minute." });
+    name = { firstName: profile.first_name, lastName: profile.last_name };
+
+    const { data: pending, error: pendingError } = await admin
+      .from("pending_runs")
+      .insert({ user_id: userId, ...run.row })
+      .select("id")
+      .single();
+    if (pendingError || !pending) {
+      console.error("[calculator-signup] pending save failed:", pendingError?.message);
+      return respond(o, 500, { error: "Something went wrong. Please try again." });
+    }
+    reportId = pending.id;
   }
 
-  return respond(o, 200, { status: "check_inbox", message: "Check your inbox" });
+  // ── Everyone: email a one-time sign-in link to this report ─────────────────────────────
+  const link = await signInLink(admin, email, `/tools/max-offer/history?report=${reportId}`);
+  if (!link) return respond(o, 500, { error: "Something went wrong. Please try again." });
+
+  let devLink: string | undefined;
+  try {
+    await sendAuthEmailViaGhl({ email, name, kind: "login", link });
+  } catch (err) {
+    if (DEV) {
+      // Local testing without the Zap: print the link so the flow can be clicked through.
+      console.info("[calculator-signup] DEV ONLY, GHL not configured. Sign-in link:", link);
+      devLink = link;
+    } else {
+      console.error("[calculator-signup] GHL login email failed:", err instanceof Error ? err.message : err);
+      return respond(o, 502, { error: "Your deal is saved, but we couldn't send your email right now. Please try again in a minute." });
+    }
+  }
+
+  return respond(o, 200, {
+    status: "check_inbox",
+    message: "Check your inbox",
+    // Local development only (never in production): stands in for the email GHL would send.
+    ...(DEV && devLink ? { devLink } : {}),
+  });
 }
 
 function isAlreadyRegistered(error: { message?: string; code?: string; status?: number }) {
